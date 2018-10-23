@@ -1,4 +1,4 @@
-show pin *spindle*
+#show pin *spindle*
 
 # simulated spindle encoder (for spindle-synced moves)
 loadrt sim_spindle names=sim_spindle
