@@ -309,14 +309,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -334,14 +342,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -359,14 +375,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -384,14 +408,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -409,14 +441,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -434,14 +474,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -450,7 +498,7 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="input_adj_xy_clearances">
+     <widget class="QLineEdit" name="input_xy_clearances">
       <property name="geometry">
        <rect>
         <x>498</x>
@@ -459,14 +507,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -484,14 +540,22 @@
         <height>23</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="cursor">
+       <cursorShape>IBeamCursor</cursorShape>
+      </property>
       <property name="inputMask">
-       <string/>
+       <string>99.9999</string>
       </property>
       <property name="text">
-       <string>0</string>
+       <string>00.0000</string>
       </property>
       <property name="maxLength">
-       <number>32768</number>
+       <number>7</number>
       </property>
       <property name="frame">
        <bool>true</bool>
@@ -685,14 +749,22 @@ Angle</string>
          <height>23</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="cursor">
+        <cursorShape>IBeamCursor</cursorShape>
+       </property>
        <property name="inputMask">
-        <string/>
+        <string>999.9999</string>
        </property>
        <property name="text">
-        <string>0</string>
+        <string>000.0000</string>
        </property>
        <property name="maxLength">
-        <number>32768</number>
+        <number>8</number>
        </property>
        <property name="frame">
         <bool>true</bool>
@@ -707,7 +779,7 @@ Angle</string>
        <rect>
         <x>138</x>
         <y>10</y>
-        <width>96</width>
+        <width>94</width>
         <height>94</height>
        </rect>
       </property>
@@ -803,17 +875,31 @@ Angle</string>
          <height>23</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="cursor">
+        <cursorShape>IBeamCursor</cursorShape>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
        <property name="inputMask">
-        <string/>
+        <string>999.9999</string>
        </property>
        <property name="text">
-        <string>0</string>
+        <string>000.0000</string>
        </property>
        <property name="maxLength">
-        <number>32768</number>
+        <number>8</number>
        </property>
        <property name="frame">
         <bool>true</bool>
+       </property>
+       <property name="cursorPosition">
+        <number>8</number>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -828,14 +914,22 @@ Angle</string>
          <height>23</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="cursor">
+        <cursorShape>IBeamCursor</cursorShape>
+       </property>
        <property name="inputMask">
-        <string/>
+        <string>999.9999</string>
        </property>
        <property name="text">
-        <string>0</string>
+        <string>000.0000</string>
        </property>
        <property name="maxLength">
-        <number>32768</number>
+        <number>8</number>
        </property>
        <property name="frame">
         <bool>true</bool>
@@ -853,14 +947,22 @@ Angle</string>
          <height>23</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="cursor">
+        <cursorShape>IBeamCursor</cursorShape>
+       </property>
        <property name="inputMask">
-        <string/>
+        <string>999.9999</string>
        </property>
        <property name="text">
-        <string>0</string>
+        <string>000.0000</string>
        </property>
        <property name="maxLength">
-        <number>32768</number>
+        <number>8</number>
        </property>
        <property name="frame">
         <bool>true</bool>
@@ -2892,6 +2994,22 @@ X</string>
    </hints>
   </connection>
   <connection>
+   <sender>input_adj_z</sender>
+   <signal>returnPressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>input_adj_z_enter()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>input_adj_angle</sender>
    <signal>returnPressed()</signal>
    <receiver>MainWindow</receiver>
@@ -2992,6 +3110,22 @@ X</string>
    <signal>returnPressed()</signal>
    <receiver>MainWindow</receiver>
    <slot>input_side_edge_lenght_enter()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>input_xy_clearances</sender>
+   <signal>returnPressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>input_xy_clearances_enter()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>0</x>

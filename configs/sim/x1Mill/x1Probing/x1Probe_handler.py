@@ -104,6 +104,9 @@ import time;
 localtime = time.asctime( time.localtime(time.time()))
 print "Local current time :", localtime
 
+
+
+
 class HandlerClass:
     def __init__(self, halcomp,widgets,paths):
         self.hal = halcomp
@@ -112,59 +115,54 @@ class HandlerClass:
         self.cmnd = linuxcnc.command()
         self.error = linuxcnc.error_channel()
         # connect to GStat to catch linuxcnc events
-        STATUS.connect('state-on', self.on_state_on)
-        STATUS.connect('state-off', self.on_state_off)
+#        STATUS.connect('state-on', self.on_state_on)
+#        STATUS.connect('state-off', self.on_state_off)
         self.jog_slow_fast=[] # required by jogging
-
+   
 # =================================================================
     def initialized__(self):
         STATUS.forced_update()
-#        self.w.tooloffsetdialog._geometry_string='0 0 600 396'
-#        self.w.originoffsetdialog._geometry_string='0 0 600 396 onwindow'
+        gobject.timeout_add(100, self._periodic)
 
-       
-    def processed_key_event__(self,receiver,event,is_pressed,key,code,shift,cntrl):
-        # when typing in MDI, we don't want keybinding to call functions
-        # so we catch and process the events directly.
-        # We do want ESC, F1 and F2 to call keybinding functions though
-        if code not in(QtCore.Qt.Key_Escape,QtCore.Qt.Key_F1 ,QtCore.Qt.Key_F2,
-                    QtCore.Qt.Key_F3,QtCore.Qt.Key_F5,QtCore.Qt.Key_F5):
-            if isinstance(receiver, OFFVIEW_WIDGET) or \
-                isinstance(receiver, MDI_WIDGET):
-                if is_pressed:
-                    receiver.keyPressEvent(event)
-                    event.accept()
-                return True
-            elif isinstance(receiver, GCODE) and STATUS.is_man_mode() == False:
-                if is_pressed:
-                    receiver.keyPressEvent(event)
-                    event.accept()
-                return True
-            elif isinstance(receiver,QtWidgets.QDialog):
-                print 'dialog'
-                return True
-        try:
-            KEYBIND.call(self,event,is_pressed,shift,cntrl)
-            return True
-        except Exception as e:
-            print 'no function %s in handler file for-%s'%(KEYBIND.convert(event),key)
-            return False
+        # jogging rate set default values
+#        self.jograte_slow_position_value=7
+#        self.jograte_fast_position_value=10
+#        self.jograte_slow_linear_value=5
+#        self.jograte_fast_linear_value=8 
+#        self.jograte_slow_angular_value=5
+#        self.jograte_fast_angular_value=9
 
-    def on_state_on(self,w):
-        print 'machine on'
+# end init self
+# =================================================================
 
-    def on_state_off(self,w):
-        print 'machine off'
 
-# x1Probe panel size is 600 x 400 to make it compact
-# and provide improved clarity of its functions.
 
+
+#        STATUS.connect('periodic', self._periodic)
+        gobject.timeout_add(100, self._periodic)
+
+
+# start periodic
+# =================================================================
+#        STATUS.connect('periodic', self._periodic)
     def _periodic(self):
 
- 
-        STATUS.set_jograte(float(3))
-# =====================================
+#        self.w.lab_jog_jog_rate.setText(str(self.jog_rate_selected_out))
+#        self.w.lab_jog_jog_step.setText(str(self.jogStep))
+#        distance = STATUS.get_jog_rate()
+#        print "jog increment", distance 
+
+#        self.w.abtn_jog_pos_a.setEnabled(False) # sim only has 3 axis so keep these disabled
+#        self.w.abtn_jog_neg_a.setEnabled(False) # sim only has 3 axis so keep these disabled
+
+#        STATUS.set_jograte(float(3))
+
         return True
+
+# end periodic
+# =====================================
+
+
        
 # This is ready for verser code insertion
 # and modification to except new names for improved clarity
@@ -175,7 +173,7 @@ class HandlerClass:
 
 # Outside measurements
 # ===============================================================
-    def pbtn_outside_xpym_released(self):
+    def pbtn_outside_xpym_released(self): # 
         print  "1 xpym_released "
     def pbtn_outside_ym_released(self):   # also for pbtn_inside_ym_released
         print  "2 outside_ym_released - also inside_ym_released"
@@ -239,44 +237,93 @@ class HandlerClass:
 
 # Set offsets for values entered by inputs
 # ===============================================================
-    def pbtn_set_x_released(self):
-          print "set_x_released"
-    def pbtn_set_y_released(self):
-          print "set_y_released"
-    def pbtn_set_z_released(self):
-          print "set_z_released"
-    def pbtn_set_angle_released(self):
-          print "set_angle_released"
+    def pbtn_set_x_released(self): # old = on_btn1_set_x_released
+        print "set_x_released"
+#        self.prefs.putpref( "ps_offs_x", self.input_adj_x_enter.get_value(), float )
+        self.cmnd.mode( linuxcnc.MODE_MDI )
+        self.cmnd.wait_complete()
+        self.cmnd.mdi( "G10 L20 P0 X%f" % self.input_adj_x_enter.selectAll())
+        print selectAll()
+#        time.sleep(1)
+ 
+    def pbtn_set_y_released(self): # old = on_btn1_set_y_released
+        print "set_y_released"
+        self.prefs.putpref( "ps_offs_y", self.input_adj_y_enter.get_value(), float )
+        self.command.mode( linuxcnc.MODE_MDI )
+        self.command.wait_complete()
+        self.command.mdi( "G10 L20 P0 Y%f" % self.input_adj_y_enter.get_value() )
+        time.sleep(1)
+
+    def pbtn_set_z_released(self): # old = on_btn1_set_z_released
+        print "set_z_released"
+        self.prefs.putpref( "ps_offs_z", self.input_adj_z_enter.get_value(), float )
+        self.command.mode( linuxcnc.MODE_MDI )
+        self.command.wait_complete()
+        self.command.mdi( "G10 L20 P0 Z%f" % self.input_adj_z_enter.get_value() )
+        time.sleep(1)
+
+    def pbtn_set_angle_released(self): # old = on_btn1_set_angle
+        print "set_angle_released"
+        self.prefs.putpref( "ps_offs_angle", self.input_adj_angle_enter.get_value(), float )
+        self.lb_probe_a.set_text( "%.3f" % self.input_adj_angle_enter.get_value())
+        self.command.mode( linuxcnc.MODE_MDI )
+        self.command.wait_complete()
+        s="G10 L2 P0"
+        if self.chk_set_zero.get_active() :
+            s +=  " X%.4f"%self.input_adj_x_enter.get_value()      
+            s +=  " Y%.4f"%input_adj_y_enter.get_value()      
+        else :
+            self.stat.poll()
+            x=self.stat.position[0]
+            y=self.stat.position[1]
+            s +=  " X%.4f"%x      
+            s +=  " Y%.4f"%y      
+        s +=  " R%.4f"%self.input_adj_angle_enter.get_value()
+        print "s=",s                     
+        self.gcode(s)
+        time.sleep(1)
 
 # Inputs for the offest values above
 # ===============================================================
     def input_adj_x_enter(self):
-        print "adjust_x"
+        offset_x= (self.w.input_adj_x.text())
+        print "offset_x ",offset_x  
     def input_adj_y_enter(self):
-        print "adjust_y"
+        offset_y= (self.w.input_adj_y.text())
+        print "offset_y ",offset_y  
     def input_adj_z_enter(self):
-        print "adjust_z"
+        offset_z= (self.w.input_adj_z.text())
+        print "offset_z ",offset_z  
     def input_adj_angle_enter(self):
-        print "adjust_angle"
+        offset_angle= (self.w.input_adj_angle.text())
+        print "offset_angle ",offset_angle  
 
 # Inputs for the offest values above
 # ===============================================================
     def input_probe_diam_enter(self):
-        print "input Probe_diam"
+        probe_diam= (self.w.input_probe_diam.text())
+        print "input Probe_diam ",probe_diam
     def input_max_travel_enter(self):
-        print "input max_travel"
+        max_travel= (self.w.input_max_travel.text())
+        print "input max_travel ",max_travel
     def input_latch_return_dist_enter(self):
-        print "input latch_return_dist"
+        latch_return_dist= (self.w.input_latch_return_dist.text())
+        print "input latch_return_dist ",latch_return_dist
     def input_search_vel_enter(self):
-        print "input search_vel"
+        search_vel= (self.w.input_search_vel.text())
+        print "input search_vel ",search_vel
     def input_probe_vel_enter(self):
-        print "input probe_vel"
+        probe_vel= (self.w.input_probe_vel.text())
+        print "input probe_vel ",probe_vel
     def input_side_edge_lenght_enter(self):
-        print "input side_edge_lenght"
+        side_edge_lenght= (self.w.input_side_edge_lenght.text())
+        print "input side_edge_lenght ",side_edge_lenght
     def input_xy_clearances_enter(self):
-        print "input xy_clearances"
+        xy_clearances= (self.w.input_xy_clearances.text())
+        print "input xy_clearances ",xy_clearances
     def input_z_clearance_enter(self):
-        print "input z_clearance"
+        z_clearance= (self.w.input_z_clearance.text())
+        print "input z_clearance ",z_clearance
 
 # Staus display labels which are used to display and store values
 # ===============================================================
