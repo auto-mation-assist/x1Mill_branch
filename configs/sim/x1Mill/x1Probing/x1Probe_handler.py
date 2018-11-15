@@ -287,16 +287,39 @@ class HandlerClass:
 # ===============================================================
     def input_adj_x_enter(self):
         offset_x= (self.w.input_adj_x.text())
-        print "offset_x ",offset_x  
+        print "offset_x ",offset_x
+# to set a status label 
+        self.w.status_xm.setText(offset_x)
+# to read a status label
+        status_1=(self.w.status_xm.text())
+        print "Status_1 ",status_1
+
     def input_adj_y_enter(self):
         offset_y= (self.w.input_adj_y.text())
-        print "offset_y ",offset_y  
+        print "offset_y ",offset_y 
+# to set a status label 
+        self.w.status_xp.setText(offset_y)
+# to read a status label
+        status_2=(self.w.status_xp.text())
+        print "Status_2 ",status_2
+
     def input_adj_z_enter(self):
         offset_z= (self.w.input_adj_z.text())
-        print "offset_z ",offset_z  
+        print "offset_z ",offset_z 
+# to set a status label 
+        self.w.status_ym.setText(offset_z)
+# to read a status label
+        status_3=(self.w.status_ym.text())
+        print "Status_3 ",status_3 
+
     def input_adj_angle_enter(self):
         offset_angle= (self.w.input_adj_angle.text())
         print "offset_angle ",offset_angle  
+# to set a status label 
+        self.w.status_yp.setText(offset_angle)
+# to read a status label
+        status_4=(self.w.status_yp.text())
+        print "Status_4 ",status_4
 
 # Inputs for the offest values above
 # ===============================================================
