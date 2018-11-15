@@ -1,0 +1,204 @@
+#!/usr/bin/env python
+# Qtvcp versa probe
+# 
+# Copyright (c) 2018  Chris Morley <chrisinnanaimo@hotmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# a probe screen based on Versa probe screen
+# added by Johannes Fassotte
+# this program requires the below five .ngc files to function
+# located in: /nc_files/macros
+# versa_probe_xplus.ngc
+# versa_probe_xminus.ngc
+# versa_probe_yplus.ngc
+# versa_probe_yminus.ngc
+# versa_probe_down.ngc
+# required icons are located in: /share/qtvcp/images/versa_probe_icons/
+
+import sys
+import os
+import math
+
+from PyQt5 import QtGui, QtCore, QtWidgets, uic
+
+from qtvcp.widgets.widget_baseclass import _HalWidgetBase
+from qtvcp.core import Status
+from qtvcp import logger
+
+# Instiniate the libraries with global reference
+# STATUS gives us status messages from linuxcnc
+# LOG is for running code logging
+STATUS = Status()
+LOG = logger.getLogger(__name__)
+DATADIR = os.path.abspath( os.path.dirname( __file__ ) )
+
+
+class HandlerClass:
+    def __init__(self, halcomp,widgets,paths):
+        self.hal = halcomp
+        self.w = widgets
+        self.stat = linuxcnc.stat()
+        self.cmnd = linuxcnc.command()
+        self.error = linuxcnc.error_channel()
+        # connect to GStat to catch linuxcnc events
+        STATUS.connect('state-on', self.on_state_on)
+        STATUS.connect('state-off', self.on_state_off)
+        self.jog_slow_fast=[] # required by jogging
+
+
+#class x1Probe(QtWidgets.QWidget, _HalWidgetBase):
+#    def __init__(self, parent=None):
+#        super(x1Probe, self).__init__(parent)
+#        self.setMinimumSize(600, 400)
+#        self.filename = os.path.join(DATADIR, 'x1_probe.ui')
+#        try:
+#            instance = uic.loadUi(self.filename, self)
+#        except AttributeError as e:
+#            log.critical(e)
+    print "line 53 =============================================================="
+#    def _hal_init(self):
+#        pass
+
+    #####################################################
+    # button callbacks
+    #####################################################
+
+
+    def pbtn_outside_xpym_released(self):
+        print  "1 xpym_released "
+    def pbtn_outside_ym_released(self):   # also for pbtn_inside_ym_released
+        print  "2 outside_ym_released "
+    def pbtn_outside_xmym_released(self):
+          print  "3 outside_xmym_released "
+    def pbtn_outside_xp_released(self):   # also for pbtn_inside_xp_released
+          print  "4 outside_xp_released "
+    def pbtn_outside_center_released(self):
+          print  "5 outside_center_released "
+    def pbtn_outside_xm_released(self):   # also for pbtn_inside_xm_released
+          print  "6 outside_xm_released "
+    def pbtn_outside_xpyp_released(self):
+          print  "7 outside_xpyp_released "
+    def pbtn_outside_yp_released(self):   # also for pbtn_inside_yp_released
+          print  "8 outside_yp_released "
+    def pbtn_outside_xmyp_released(self):
+          print  "9 outside_xmyp_released "
+
+    def pbtn_inside_xmyp_released(self):
+          print  "xpym_released "
+    def pbtn_inside_xpyp_released(self):
+          print  "xpym_released "
+    def pbtn_inside_xy_hole_released(self):
+          print  "xpym_released "
+    def pbtn_inside_xmym_released(self):
+          print  "xpym_released "
+    def pbtn_inside_xpym_released(self):
+          print  "xpym_released "
+
+    def pbtn_skew_xp_released(self):
+          print "skew_xp_released"  
+    def pbtn_skew_ym_released(self):
+          print "skew_ym_released"  
+    def pbtn_skew_yp_released(self):
+          print "skew_yp_released"
+    def pbtn_skew_xm_released(self):
+          print "skew_xm_released"
+
+    def pbtn_down_released(self):
+          print "down_released"
+
+    def pbtn_allow_auto_zero_released(self):
+          print "allow_auto_zero_released"
+    def pbtn_allow_auto_skew_released(self):
+          print "allow_auto_skew_released"
+
+    def pbtn_set_x_released(self):
+          print "set_x_released"
+    def pbtn_set_y_released(self):
+          print "set_y_released"
+    def pbtn_set_z_released(self):
+          print "set_z_released"
+    def pbtn_set_angle_released(self):
+          print "set_angle_released"
+
+    def input_adj_x_enter(self):
+        print "adjust_x"
+    def input_adj_y_enter(self):
+        print "adjust_y"
+    def input_adj_z_enter(self):
+        print "adjust_z"
+    def input_adj_angle_enter(self):
+        print "adjust_angle"
+
+    def input_probe_diam_enter(self):
+        print "input Probe_diam"
+    def input_max_travel_enter(self):
+        print "input max_travel"
+    def input_latch_return_dist_enter(self):
+        print "input latch_return_dist"
+    def input_search_vel_enter(self):
+        print "input search_vel"
+    def input_probe_vel_enter(self):
+        print "input probe_vel"
+    def input_side_edge_lenght_enter(self):
+        print "input side_edge_lenght"
+    def input_xy_clearances_enter(self):
+        print "input xy_clearances"
+    def input__enter(self):
+        print "input z_clearance"
+
+    def status_z(self):
+        print "status_z"
+    def status_not_used(self):
+        print "status_not_used"
+    def status_yc(self):
+        print "status_z"
+    def status_a(self):
+        print "status_a"
+    def status_yp(self):
+        print "status_yp"
+    def status_xm(self):
+        print "status_xm"
+    def status_xc(self):
+        print "status_xc"
+    def status_lx(self):
+        print "status_lx"
+    def status_ly(self):
+        print "status_ly"
+    def status_d(self):
+        print "status_d"
+    def status_ym(self):
+        print "status_ym"
+    def status_xp(self):
+        print "status_xp"
+
+# End commands for measurements
+# =====================================================
+
+    #####################################################
+    # Helper functions
+    #####################################################
+
+
+
+####################################
+# Testing
+####################################
+if __name__ == "__main__":
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtGui import *
+
+    app = QtWidgets.QApplication(sys.argv)
+    w = VersaProbe()
+    w.show()
+    sys.exit( app.exec_() )
+

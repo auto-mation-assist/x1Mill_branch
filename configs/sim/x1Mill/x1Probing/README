@@ -1,0 +1,32 @@
+This is a simulation of the x1_probing panel.
+It is designed to use code within its
+handler for button function defines and the
+modified verser code to make it compatible
+with the x1 probing gui. 
+
+The button Icons have new names as do the
+macros that gui requires.
+ 
+The icon folder and the macro folder should
+be kept as part of this gui and not seperated from it.
+
+The primary buttons numbers for icon placement
+are as below in case the links are lost.
+
+Icons have names like:
+outside_1.png
+inside_3.png
+down.png
+
+The name and numbers agree with the positions below.
+
+Button positions.
+
+Outside     Inside      skew
+-------     -------     ---- 
+1  2  3     1  2  3     1  2
+4  5  6     4  5  6     3  4
+7  8  9     7  8  9
+                        down
+                        ----
+                        down

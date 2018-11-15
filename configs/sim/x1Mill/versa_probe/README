@@ -1,0 +1,6 @@
+This is a qtvcp simulation of the versa_probe probing panel.
+It can generate hal pins and the verser code must be 
+linked into it before it will fully function.
+
+Read error message in Documentation Folder.
+===========================================

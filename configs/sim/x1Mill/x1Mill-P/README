@@ -1,0 +1,11 @@
+This is a simulation of the x1Mill_P gui for
+a milling machine with qtvcp. The P version
+has probing built in.
+
+It is designed to use code within its
+handler for button function defines and 
+any special code required for a particular
+machine.
+
+A lathe gui will be seperate from the mill gui
+

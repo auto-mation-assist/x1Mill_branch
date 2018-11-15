@@ -1,0 +1,13 @@
+There is and issue with handling toggle buttons that inject a extra item that linux cnc is not expecting.
+This causes a segmentation fault for shared memory. I affects buttons for allow auto zero and auto skew.
+
+This believe that this was solved before.
+
+Error message:
+
+[QTvcp][INFO]  postgui filename: versa_probe_postgui.hal (qtvcp:349)
+[QTvcp.QTVCP.QT_MAKEPINS][DEBUG]  search for widget closing cleanup functions (qt_makepins.py:60)
+Shutting down and cleaning up LinuxCNC...
+task: 29525 cycles, min=0.000006, max=0.002776, avg=0.001052, 0 latency excursions (> 10x expected cycle time of 0.001000s)
+Note: Using POSIX realtime
+
