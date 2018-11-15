@@ -65,6 +65,12 @@
 #                         down
 #                         ----
 #                         down
+#
+#Notes
+# to get a input value,   example:  offset_x= (self.w.input_adj_x.text())
+# to set a status label,  example:  self.w.status_xm.setText(offset_x)
+# to read a status label, example:  status_1=(self.w.status_xm.text())
+#
 
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
