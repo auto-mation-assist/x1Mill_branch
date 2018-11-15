@@ -1073,223 +1073,144 @@ class HandlerClass:
 
 # the below are for the probing panel - It uses the verser code as a base
 # ===============================================================
-    def pbtn_probing_outside_xpym_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# This is ready for verser code insertion
+# and modification to except new names for improved clarity
+# Further work or moifications may be required for the
+# status labels and the inputs for value entries.
+# The input for value entries are giving error messages.
+# ===============================================================
 
-    def pbtn_probing_outside_ym_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# Outside measurements
+# ===============================================================
+    def pbtn_outside_xpym_released(self):
+        print  "1 xpym_released "
+    def pbtn_outside_ym_released(self):   # also for pbtn_inside_ym_released
+        print  "2 outside_ym_released - also inside_ym_released"
+    def pbtn_outside_xmym_released(self):
+          print  "3 outside_xmym_released "
+    def pbtn_outside_xp_released(self):   # also for pbtn_inside_xp_released
+          print  "4 outside_xp_released - also inside_xp_released"
+    def pbtn_outside_center_released(self):
+          print  "5 outside_center_released "
+    def pbtn_outside_xm_released(self):   # also for pbtn_inside_xm_released
+          print  "6 outside_xm_released - also inside_xm_released"
+    def pbtn_outside_xpyp_released(self):
+          print  "7 outside_xpyp_released "
+    def pbtn_outside_yp_released(self):   # also for pbtn_inside_yp_released
+          print  "8 outside_yp_released - also inside_yp_released"
+    def pbtn_outside_xmyp_released(self):
+          print  "9 outside_xmyp_released "
 
-    def pbnt_probing_outside_xmym_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# Inside measurements
+# ===============================================================
+    def pbtn_inside_xmyp_released(self):
+          print  "1 inside_xmyp_released "
+    def pbtn_inside_xpyp_released(self):
+          print  "3 inside_xpyp_released"
+    def pbtn_inside_xy_hole_released(self):
+          print  "5 inside_xy_hole_released"
+    def pbtn_inside_xmym_released(self):
+          print  "7 inside_xmym_released"
+    def pbtn_inside_xpym_released(self):
+          print  "9 inside_xpym_released "
 
-    def pbtn_probing_outside_xp_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# Skew measurements - formally "rotation"
+# ===============================================================
+    def pbtn_skew_xp_released(self):
+          print "skew_xp_released"  
+    def pbtn_skew_ym_released(self):
+          print "skew_ym_released"  
+    def pbtn_skew_yp_released(self):
+          print "skew_yp_released"
+    def pbtn_skew_xm_released(self):
+          print "skew_xm_released"
 
-    def pbnt_probing_outside_center_toggled(self):
-        name = self.w.sender().text()
-        print name
+# Straight down measurement
+# ===============================================================
+    def pbtn_down_released(self):
+          print "down_released"
 
-    def pbtn_probing_outside_xm_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# Auto zero and auto skew allow or not to allow
+# This has two associated warming LED's
+# ===============================================================
+    def pbtn_allow_auto_zero_toggle(self,pressed):
+        if pressed:
+             print "allow_auto_zero"
+        else:
+            print "dont allow_auto_zero"
+    def pbtn_allow_auto_skew_toggle(self,pressed):
+        if pressed:
+            print "allow_auto_skew"
+        else:
+            print "dont allow_auto_skew"
 
-    def pbtn_probing_outside_xpyp_toggled(self):
-        name = self.w.sender().text()
-        print name
+# Set offsets for values entered by inputs
+# ===============================================================
+    def pbtn_set_x_released(self):
+          print "set_x_released"
+    def pbtn_set_y_released(self):
+          print "set_y_released"
+    def pbtn_set_z_released(self):
+          print "set_z_released"
+    def pbtn_set_angle_released(self):
+          print "set_angle_released"
 
-    def pbtn_probing_outside_yp_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# Inputs for the offest values above
+# ===============================================================
+    def input_adj_x_enter(self):
+        print "adjust_x"
+    def input_adj_y_enter(self):
+        print "adjust_y"
+    def input_adj_z_enter(self):
+        print "adjust_z"
+    def input_adj_angle_enter(self):
+        print "adjust_angle"
 
-    def pbtn_probing_outside_xmyp_toggled(self):
-        name = self.w.sender().text()
-        print name 
+# Inputs for the offest values above
+# ===============================================================
+    def input_probe_diam_enter(self):
+        print "input Probe_diam"
+    def input_max_travel_enter(self):
+        print "input max_travel"
+    def input_latch_return_dist_enter(self):
+        print "input latch_return_dist"
+    def input_search_vel_enter(self):
+        print "input search_vel"
+    def input_probe_vel_enter(self):
+        print "input probe_vel"
+    def input_side_edge_lenght_enter(self):
+        print "input side_edge_lenght"
+    def input_xy_clearances_enter(self):
+        print "input xy_clearances"
+    def input_z_clearance_enter(self):
+        print "input z_clearance"
 
-# ------------------
-
-    def pbtn_probing_inside_xmyp_toggled(self):
-        name = self.w.sender().text()
-        print name
- 
-    def pbtn_probing_inside_yp_toggled(self):
-        name = self.w.sender().text()
-        print name
-
-    def pbtn_probing_inside_xpyp_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_inside_xm_toggled(self):
-        name = self.w.sender().text()
-        print name
- 
-    def pbtn_probing_inside_xy_hole_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_inside_xp_toggled(self):
-        name = self.w.sender().text()
-        print name
- 
-    def pbtn_probing_inside_xmym_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_inside_ym_toggled(self):
-        name = self.w.sender().text()
-        print name
-
-    def pbtn_probing_Inside_xpym_toggled(self):
-        name = self.w.sender().text()
-        print name
- 
-#  ------------------
-
-    def pbtn_probing_skewed_x_pos_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_skewed_y_neg_m_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_skewed_Y_pos_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_skewed_X_neg_m_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-# ------------------
-
-    def pbtn_probing_auto_zero_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_auto_rotation_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_offsets_set_x_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_offsets_set_y_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def pbtn_probing_offsets_set_z_toggled(self):
-        name = self.w.sender().text()
-        print name
- 
-    def pbtn_probing_offsets_set_angle_toggled(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_offset_x_value_setText(self):
-        name = self.w.sender().text()
-        print name
-
-    def lne_probing_offset_y_value_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_offset_z_value_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_offset_z_value_2_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-#  ------------------
-
-    def lne_probing_ball_diameter_selectAll(self):
-        name = self.w.sender().text()
-        print name
-                    
-    def lne_probing_maximum_travel_setText(self):
-        name = self.w.sender().text()
-        print name
-
-    def lne_probing_latch_return_distance_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_search_velocity_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_touched_return_velocity_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_side_edge_lenght_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_xy_clearances_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lne_probing_z_clearance_setText(self):
-        name = self.w.sender().text()
-        print name
-
-# ------------------
-
-    def lab_probing_offset_xm_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_xc_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_xp_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_lx_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_ym_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_yc_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_yp_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_ly_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_not_used_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_z_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_d_setText(self):
-        name = self.w.sender().text()
-        print name 
-
-    def lab_probing_offset_a_setText(self):
-        name = self.w.sender().text()
-        print name 
+# Staus display labels which are used to display and store values
+# ===============================================================
+    def status_z_setText(self):
+        print "status_z"
+    def status_not_used_setText(self):
+        print "status_not_used"
+    def status_yc_setText(self):
+        print "status_z"
+    def status_a_setText(self):
+        print "status_a"
+    def status_yp_setText(self):
+        print "status_yp"
+    def status_xm_setText(self):
+        print "status_xm"
+    def status_xc_setText(self):
+        print "status_xc"
+    def status_lx_setText(self):
+        print "status_lx"
+    def status_ly_setText(self):
+        print "status_ly"
+    def status_d_setText(self):
+        print "status_d"
+    def status_ym_setText(self):
+        print "status_ym"
+    def status_xp_setText(self):
+        print "status_xp"
 
 # end of gui specific items
 # ===============================================================
