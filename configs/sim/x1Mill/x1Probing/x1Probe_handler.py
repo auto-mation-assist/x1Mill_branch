@@ -1496,7 +1496,7 @@ class HandlerClass:
         status_4=(self.w.status_yp.text())
         print "Status_4 ",status_4
 
-# Inputs for the offest values above
+# Inputs - for primary values
 # ===============================================================
     def input_probe_diam_enter(self):
         probe_diam= (self.w.input_probe_diam.text())
@@ -1522,6 +1522,7 @@ class HandlerClass:
     def input_z_clearance_enter(self):
         z_clearance= (self.w.input_z_clearance.text())
         print "input z_clearance ",z_clearance
+
 
 # Staus display labels which are used to display and store values
 # ===============================================================
