@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Qtvcp versa probe
-# 
+#
 # Copyright (c) 2018  Chris Morley <chrisinnanaimo@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,17 +25,19 @@
 # required renamed icons are located in: /versa_probe_icons/
 # these were renamed to agree with buttom sequence numbers for clarity.
 #
-# Icons have names like: outside_1.png, inside_5.png, down.png
+# For easy placement Icons have names like: outside_1.png, inside_5.png, down.png
 # that agree with the positions below.
 #
 # Outside     Inside      skew
-# -------     -------     ---- 
+# -------     -------     ----
 # 1  2  3     1  2  3     1  2
 # 4  5  6     4  5  6     3  4
 # 7  8  9     7  8  9
-#                         down
-#                         ----
-#                         down
+#						  inside_xl  ouside_xl
+#						  inside_yl  ouside_yl
+#
+#                         down		 tool_dia
+
 import sys
 import os
 import math
@@ -66,12 +68,6 @@ class VersaProbe(QtWidgets.QWidget, _HalWidgetBase):
     def _hal_init(self):
         pass
 
-
-
-
-# callbacks from form
-# -------------------------------------------------------
-# Are not available
 
 
 
