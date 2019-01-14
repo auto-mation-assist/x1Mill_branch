@@ -46,7 +46,7 @@
 # jogging_control[9]	=  linear increment value  (float)
 # jogging_control[10]	=  current linear increment index
 # jogging_control[12]	=  angular increment value (float)
-# jogging_control[12]	=  current angular increment index
+# jogging_control[13]	=  current angular increment index
 
 
 # inch jogging increments
@@ -570,7 +570,7 @@ class HandlerClass:
 
 		# set a inch jogging button to true if there is a value match
 		search_value = inch_incrs[2]
-		index =(inch_incrs[3:23].index(search_value))
+		index =(inch_list.index(search_value))
 		self.jogging_control[10] = index
 		if index < 20:
 			exec (self.jog_linear_buttons[index])
@@ -597,7 +597,7 @@ class HandlerClass:
 
 		# set a metric jogging button to true if there is a value match
 		search_value = metric_incrs[2]
-		index =(metric_incrs[3:23].index(search_value))
+		index =(metric_list.index(search_value))
 		self.jogging_control[11] = index
 		if index < 20:
 			exec (self.jog_linear_buttons[index])
@@ -624,12 +624,15 @@ class HandlerClass:
 
 		# set a angular jogging button to true if there is a value match
 		search_value = angular_incrs[2]
-		index =(angular_incrs[3:23].index(search_value))
+		index =(angular_list.index(search_value))
+		self.jogging_control[12] = angular_list[index]
 		self.jogging_control[13] = index
 		if index < 20:
 			exec (self.jog_angular_buttons[index])
 		else:
 			print "Error: Default angular jog increment button .ini value missmatch:"
+		self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
+		print 'default angular jog increment set to: ', self.jogging_control[12]
 
 
 #
@@ -641,7 +644,6 @@ class HandlerClass:
 			local_linear = self.inch_incr_list[3:23]                 #  same
 			self.w.plab_f12s6_0_jog_mode_linear.setText('INCH - LINEAR JOG MODE')
 			self.jogging_control[9] = self.inch_incr_list[2]         # increment value
-
 			index = self.jogging_control[10]
 			if index != -1:
 				exec (self.jog_linear_buttons[index])
@@ -662,7 +664,7 @@ class HandlerClass:
 			btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.set_true_string(str(local_linear['+str(index)+']))'
 			exec btn
 
-		# status linuxcnc to see what the actual increment value is now
+		# status linuxcnc for current increment value
 		self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
 		print 'default linear jog increment is: ', self.jogging_control[9]
 
@@ -692,14 +694,6 @@ class HandlerClass:
 			exec btn
 			btn = 'self.w.pb_f12s6_2_jog_angular_'+str(index)+'.set_true_string(str(local_angular['+str(index)+']))'
 			exec btn
-
-		# set startup increment value from ini file
-		self.jogging_control[12] = local_angular[2]
- 		ang_def_incr = local_angular[2]
-
-		self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
-		print 'default angular jog increment set to: ',ang_def_incr
-
 
 		# set angular slider range, min and max values from ini file
 		angular_max_rate = int(self.inifile.find('X1GUI', 'ANGULAR_MAX_RATE'))
@@ -1796,8 +1790,24 @@ class HandlerClass:
 
 #		jogging position preset commands - the commands have to be listed in the ini file
 	def pb_f12s6_1_jog_position_0_pressed(self):
-		cmd = self.jogging_position_cmds[0][1]
-		print 'position jog cmd:' ,cmd
+		print '>>>>> pb_f12s6_1_jog_position_0_pressed'
+		print '>>>>> SENDING CMD - self.cmnd.mode(linuxcnc.MODE_MDI)'
+		self.cmnd.mode(linuxcnc.MODE_MDI)
+		print '>>>>> SENDING CMD - self.cmnd.wait_complete()'
+		self.cmnd.wait_complete()
+		print '>>>>> SENDING CMD - self.cmnd.mdi(G01X0Y0Z0A0F2)'
+		self.cmnd.mdi('G01X0Y0Z0A0F2')
+		print '>>>>> SENDING CMD - self.cmnd.wait_complete()'
+		self.cmnd.wait_complete()
+		print '>>>>> SENDING CMD - self.cmnd.mode(linuxcnc.MODE_MANUAL)'
+		self.cmnd.mode(linuxcnc.MODE_MANUAL)
+		print '>>>>> SENDING CMD - self.cmnd.wait_complete()'
+		self.cmnd.wait_complete()
+
+#		self.cmnd.mdi(str(self.jogging_position_cmds[0][1]))
+
+
+
 	def pb_f12s6_1_jog_position_1_pressed(self):
 		cmd = self.jogging_position_cmds[1][1]
 		print 'position jog cmd:' ,cmd
@@ -2055,12 +2065,14 @@ class HandlerClass:
 		print 'graph_spare_2'
 	def pb_f10sw3_0_graph_dro_toggle(self):
 		print 'graph_dro'
-	def pb_f10sw3_0_zoom_out_pressed(self):
-		self.w.GRAPHICS_NAME.zoom_out()
+	def pb_f10sw3_0_zoom_out_pressed(self)
+		print 'graph_zoom out':
+#		self.w.GRAPHICS_NAME.zoom_out()
 	def pb_f10sw3_0_zoom_in_pressed(self):
-#		self.w.gcode_graphics.zoom_in(10)
-#		STATUS.emit('view-changed', '%s' % 'zoom-in')
-		STATUS.emit('view-changed', '%s' % 'dro')
+		print 'graph_zoom in'
+#		self.w.GRAPHICS_NAME.zoom_in()
+
+
 	def pb_f10sw3_0_graph_x_toggle(self):
 		STATUS.emit('view-changed', '%s' % 'x')
 	def pb_f10sw3_0_graph_y_toggle(self):
