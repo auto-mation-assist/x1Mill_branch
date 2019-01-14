@@ -2065,8 +2065,8 @@ class HandlerClass:
 		print 'graph_spare_2'
 	def pb_f10sw3_0_graph_dro_toggle(self):
 		print 'graph_dro'
-	def pb_f10sw3_0_zoom_out_pressed(self)
-		print 'graph_zoom out':
+	def pb_f10sw3_0_zoom_out_pressed(self):
+		print 'graph_zoom out'
 #		self.w.GRAPHICS_NAME.zoom_out()
 	def pb_f10sw3_0_zoom_in_pressed(self):
 		print 'graph_zoom in'
