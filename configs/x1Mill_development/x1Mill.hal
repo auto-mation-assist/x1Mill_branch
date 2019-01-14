@@ -1,0 +1,565 @@
+#cnc1.hal  11-08-2017  10:27am
+
+#Treads
+loadrt [KINS]KINEMATICS
+loadrt [EMCMOT]EMCMOT  base_period_nsec=[EMCMOT]BASE_PERIOD   servo_period_nsec=[EMCMOT]SERVO_PERIOD   num_joints=[EMCMOT]NUM_JOINTS num_spindles=[EMCMOT]NUM_SPINDLES
+#loadrt threads name1=base-thread
+loadrt pid num_chan=7
+loadrt hostmot2
+loadrt [HOSTMOT2](DRIVER) config=[HOSTMOT2](CONFIG)
+setp hm2_[HOSTMOT2](BOARD).0.watchdog.timeout_ns 30000000
+
+#Added for tool-change remap
+net tool-prep-loop iocontrol.0.tool-prepare => iocontrol.0.tool-prepared
+net tool-change-loop iocontrol.0.tool-change => iocontrol.0.tool-changed
+#The below are in postgui
+#net tool-change gmoccapy.toolchange-change <= iocontrol.0.tool-change
+#net tool-changed gmoccapy.toolchange-changed <= iocontrol.0.tool-changed
+#net tool-prep-number gmoccapy.toolchange-number <= iocontrol.0.tool-prep-number
+
+loadrt and2  count=33
+loadrt not   count=5
+loadrt mult2 count=5
+loadrt or2   count=4
+loadrt logic personality=517 names=limits-combined personality=522
+loadrt orient
+loadrt mux2 count=11
+loadrt abs count=5
+loadrt near
+loadrt scale
+loadrt mux_generic config="bb2"
+loadrt flipflop count=2
+loadrt oneshot count=2
+loadrt edge count=2
+loadrt timedelay count=2
+
+# Functions
+addf hm2_[HOSTMOT2](BOARD).0.read    servo-thread
+addf hm2_[HOSTMOT2](BOARD).0.write   servo-thread
+addf motion-command-handler          servo-thread
+addf motion-controller               servo-thread
+addf limits-combined                 servo-thread
+addf pid.0.do-pid-calcs              servo-thread
+addf pid.1.do-pid-calcs              servo-thread
+addf pid.2.do-pid-calcs              servo-thread
+addf pid.3.do-pid-calcs              servo-thread
+addf pid.4.do-pid-calcs              servo-thread
+addf pid.5.do-pid-calcs              servo-thread
+addf pid.6.do-pid-calcs              servo-thread
+addf and2.0         servo-thread
+addf and2.1         servo-thread
+addf and2.2         servo-thread
+addf and2.3         servo-thread
+addf and2.4         servo-thread
+addf and2.5         servo-thread
+addf and2.6         servo-thread
+addf and2.7         servo-thread
+addf and2.8         servo-thread
+addf and2.9         servo-thread
+addf and2.10        servo-thread
+addf and2.11        servo-thread
+addf and2.12        servo-thread
+addf and2.13        servo-thread
+addf and2.14        servo-thread
+addf and2.15        servo-thread
+addf and2.16        servo-thread
+addf and2.17        servo-thread
+addf and2.18        servo-thread
+addf and2.19        servo-thread
+addf and2.20        servo-thread
+addf and2.21        servo-thread
+addf and2.22        servo-thread
+
+addf and2.23        servo-thread
+addf and2.24        servo-thread
+addf and2.25        servo-thread
+addf and2.26        servo-thread
+addf and2.27        servo-thread
+addf and2.28        servo-thread
+addf and2.29        servo-thread
+addf and2.30        servo-thread
+addf and2.31        servo-thread
+addf and2.32        servo-thread
+
+addf not.0          servo-thread
+addf not.1          servo-thread
+addf not.2          servo-thread
+addf not.3          servo-thread
+addf not.4          servo-thread
+addf mult2.0        servo-thread
+addf mult2.1        servo-thread
+addf mult2.2        servo-thread
+addf mult2.3        servo-thread
+addf mult2.4        servo-thread
+addf or2.0          servo-thread
+addf or2.1          servo-thread
+addf or2.2          servo-thread
+addf or2.3          servo-thread
+addf orient.0       servo-thread
+addf mux2.0         servo-thread
+#the two below are used by overide gui
+addf mux2.1         servo-thread
+addf mux2.2         servo-thread
+#the two above are used by overide gui
+addf abs.0          servo-thread
+addf abs.1          servo-thread
+addf abs.2          servo-thread
+addf abs.3          servo-thread
+addf abs.4          servo-thread
+addf near.0         servo-thread
+addf scale.0        servo-thread
+addf mux-gen.00     servo-thread
+addf flipflop.0     servo-thread
+addf flipflop.1     servo-thread
+addf oneshot.0      servo-thread
+addf oneshot.1      servo-thread
+addf edge.0         servo-thread
+addf edge.1         servo-thread
+addf timedelay.0    servo-thread
+addf timedelay.1    servo-thread
+
+#Start X Axis
+#[JOINT_0]X-Axis step, dir, enable
+setp hm2_[HOSTMOT2](BOARD).0.gpio.004.invert_output 1
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.step_type 0
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.control-type 1
+setp hm2_[HOSTMOT2](BOARD).0.gpio.003.invert_output 1
+
+#X-Axis stepgen timing parameters from ini file
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.dirsetup       [JOINT_0]STEPGEN_DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.dirhold        [JOINT_0]STEPGEN_DIRHOLD
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.steplen        [JOINT_0]STEPGEN_STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.stepspace      [JOINT_0]STEPGEN_STEPSPACE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.position-scale [JOINT_0]POSITION_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.maxvel         [JOINT_0]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.00.maxaccel       [JOINT_0]STEPGEN_MAX_ACC
+
+#X-Axis linear scale index spacing (2.000 inch)  5078 pulses per inch (0.0002)
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.scale [JOINT_0]INPUT_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.counter-mode false
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.vel-timeout  0.5
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.index-mask-invert 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.index-mask 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.index-invert 1
+setp hm2_[HOSTMOT2](BOARD).0.encoder.00.filter 0
+
+#X-Axis set PID loop gains from ini file
+setp pid.0.deadband [JOINT_0]DEADBAND
+setp pid.0.Pgain [JOINT_0]P
+setp pid.0.Igain [JOINT_0]I
+setp pid.0.Dgain [JOINT_0]D
+setp pid.0.bias [JOINT_0]BIAS
+setp pid.0.FF0 [JOINT_0]FF0
+setp pid.0.FF1 [JOINT_0]FF1
+setp pid.0.FF2 [JOINT_0]FF2
+setp pid.0.maxoutput [JOINT_0]MAX_OUTPUT
+setp pid.0.maxerror [JOINT_0]MAX_ERROR
+setp pid.0.maxerrorI 0.1
+setp pid.0.error-previous-target false
+
+#X-Axis position command and feedback
+setp mult2.0.in1 -1           # to invert number
+net emcmot.00.pos-cmd         joint.0.motor-pos-cmd  pid.0.command
+net emcmot.00.vel-cmd         joint.0.vel-cmd   pid.0.command-deriv
+net motor.00.pos1-fb          hm2_[HOSTMOT2](BOARD).0.stepgen.00.position-fb
+net encoder.00.pos2-fb        mult2.0.in0  hm2_[HOSTMOT2](BOARD).0.encoder.00.position
+net encoder.00.pos-invert     mult2.0.out   pid.0.feedback  joint.0.motor-pos-fb
+net motor.00.command          pid.0.output  hm2_[HOSTMOT2](BOARD).0.stepgen.00.velocity-cmd
+net emcmot.00.enable          and2.18.in0 joint.0.amp-enable-out
+net manual-mode-axis-disable  and2.18.in1
+net x-axis-enabled            and2.18.out pid.0.enable hm2_[HOSTMOT2](BOARD).0.stepgen.00.enable
+#End X-Axis
+
+#Start Y Axis
+#[JOINT_1]Y-Axis step, dir, enable
+setp hm2_[HOSTMOT2](BOARD).0.gpio.010.invert_output 1
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.step_type 0
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.control-type 1
+setp hm2_[HOSTMOT2](BOARD).0.gpio.009.invert_output 1
+
+#Y-Axis stepgen timing parameters from ini file
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.dirsetup       [JOINT_1]STEPGEN_DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.dirhold        [JOINT_1]STEPGEN_DIRHOLD
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.steplen        [JOINT_1]STEPGEN_STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.stepspace      [JOINT_1]STEPGEN_STEPSPACE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.position-scale [JOINT_1]POSITION_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.maxvel         [JOINT_1]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.01.maxaccel       [JOINT_1]STEPGEN_MAX_ACC
+
+#Y-Axis linear scale index spacing (2.000 inch)  5078 pulses per inch (0.0002)
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.scale [JOINT_1]INPUT_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.counter-mode False
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.vel-timeout  0.5
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.index-mask-invert 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.index-mask 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.index-invert 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.01.filter 0
+
+#Y-Axis set PID loop gains from ini file
+setp pid.1.deadband [JOINT_1]DEADBAND
+setp pid.1.Pgain [JOINT_1]P
+setp pid.1.Igain [JOINT_1]I
+setp pid.1.Dgain [JOINT_1]D
+setp pid.1.bias [JOINT_1]BIAS
+setp pid.1.FF0 [JOINT_1]FF0
+setp pid.1.FF1 [JOINT_1]FF1
+setp pid.1.FF2 [JOINT_1]FF2
+setp pid.1.maxoutput [JOINT_1]MAX_OUTPUT
+setp pid.1.maxerror [JOINT_1]MAX_ERROR
+setp pid.1.maxerrorI 0.1
+setp pid.1.error-previous-target false
+
+#Y-Axis position command and feedback
+setp mult2.1.in1 -1           # to invert number
+net emcmot.01.pos-cmd         joint.1.motor-pos-cmd  pid.1.command
+net emcmot.01.vel-cmd         joint.1.vel-cmd   pid.1.command-deriv
+net motor.01.pos1-fb          hm2_[HOSTMOT2](BOARD).0.stepgen.01.position-fb
+net encoder.01.pos2-fb        mult2.1.in0  hm2_[HOSTMOT2](BOARD).0.encoder.01.position
+net encoder.01.pos-invert     mult2.1.out  pid.1.feedback  joint.1.motor-pos-fb
+net motor.01.command          pid.1.output hm2_[HOSTMOT2](BOARD).0.stepgen.01.velocity-cmd
+net emcmot.01.enable          and2.19.in0  joint.1.amp-enable-out
+net manual-mode-axis-disable  and2.19.in1
+net y-axis-enabled            and2.19.out pid.1.enable hm2_[HOSTMOT2](BOARD).0.stepgen.01.enable
+#End Y-Axis
+
+#Start Z Axis
+#[JOINT_2]Z-Axis step, dir, enable - DIR not output inverted
+#setp hm2_[HOSTMOT2](BOARD).0.gpio.016.invert_output 1
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.step_type 0
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.control-type 1
+setp hm2_[HOSTMOT2](BOARD).0.gpio.015.invert_output 1
+
+#Z-Axis stepgen timing parameters from ini file
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.dirsetup       [JOINT_2]STEPGEN_DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.dirhold        [JOINT_2]STEPGEN_DIRHOLD
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.steplen        [JOINT_2]STEPGEN_STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.stepspace      [JOINT_2]STEPGEN_STEPSPACE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.position-scale [JOINT_2]POSITION_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.maxvel         [JOINT_2]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.02.maxaccel       [JOINT_2]STEPGEN_MAX_ACC
+
+#Z-Axis linear scale index spacing (2.000 inch)  5078 pulses per inch (0.0002)
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.scale [JOINT_2]INPUT_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.counter-mode False
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.vel-timeout  0.5
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.index-mask-invert 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.index-mask 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.index-invert 1
+setp hm2_[HOSTMOT2](BOARD).0.encoder.02.filter 0
+
+#Z-Axis set PID loop gains from ini file
+setp pid.2.deadband [JOINT_2]DEADBAND
+setp pid.2.Pgain [JOINT_2]P
+setp pid.2.Igain [JOINT_2]I
+setp pid.2.Dgain [JOINT_2]D
+setp pid.2.bias [JOINT_2]BIAS
+setp pid.2.FF0 [JOINT_2]FF0
+setp pid.2.FF1 [JOINT_2]FF1
+setp pid.2.FF2 [JOINT_2]FF2
+setp pid.2.deadband [JOINT_2]DEADBAND
+setp pid.2.maxoutput [JOINT_2]MAX_OUTPUT
+setp pid.2.maxerror [JOINT_2]MAX_ERROR
+setp pid.2.error-previous-target false
+
+#Z-Axis position command and feedback
+setp mult2.2.in1 -1           # to invert number
+net emcmot.02.pos-cmd         joint.2.motor-pos-cmd  pid.2.command
+net emcmot.02.vel-cmd         joint.2.vel-cmd   pid.2.command-deriv
+net motor.02.pos1-fb          hm2_[HOSTMOT2](BOARD).0.stepgen.02.position-fb
+net encoder.02.pos2-fb        mult2.2.in0  hm2_[HOSTMOT2](BOARD).0.encoder.02.position
+net encoder.02.pos-invert     mult2.2.out  pid.2.feedback  joint.2.motor-pos-fb
+#net encoder.02.pos2-fb        pid.2.feedback  joint.2.motor-pos-fb
+net motor.02.command          pid.2.output hm2_[HOSTMOT2](BOARD).0.stepgen.02.velocity-cmd
+net emcmot.02.enable          and2.20.in0 joint.2.amp-enable-out
+net manual-mode-axis-disable  and2.20.in1
+net z-axis-enabled            and2.20.out pid.2.enable hm2_[HOSTMOT2](BOARD).0.stepgen.02.enable
+#End Z-Axis
+
+#Start A Axis
+#[JOINT_3]A-Axis step, dir, enable
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.step_type 0
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.control-type 1
+setp hm2_[HOSTMOT2](BOARD).0.gpio.021.invert_output 1
+net emcmot.03.enable <= joint.3.amp-enable-out
+net emcmot.03.enable => hm2_[HOSTMOT2](BOARD).0.stepgen.03.enable pid.3.enable
+
+#A-Axis position command and feedback
+net emcmot.03.pos-cmd joint.3.motor-pos-cmd => pid.3.command
+net emcmot.03.vel-cmd joint.3.vel-cmd => pid.3.command-deriv
+net motor.03.pos-fb <= hm2_[HOSTMOT2](BOARD).0.stepgen.03.position-fb joint.3.motor-pos-fb pid.3.feedback
+net motor.03.command pid.3.output hm2_[HOSTMOT2](BOARD).0.stepgen.03.velocity-cmd
+setp pid.3.error-previous-target true
+
+#A-Axis stepgen timing parameters from ini file
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.dirsetup       [JOINT_3]STEPGEN_DIRSETUP
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.dirhold        [JOINT_3]STEPGEN_DIRHOLD
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.steplen        [JOINT_3]STEPGEN_STEPLEN
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.stepspace      [JOINT_3]STEPGEN_STEPSPACE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.position-scale [JOINT_3]POSITION_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.maxvel         [JOINT_3]STEPGEN_MAX_VEL
+setp hm2_[HOSTMOT2](BOARD).0.stepgen.03.maxaccel       [JOINT_3]STEPGEN_MAX_ACC
+
+#A-Axis encoder
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.scale [JOINT_3]INPUT_SCALE
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.counter-mode 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.vel-timeout  0.5
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.index-mask-invert 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.index-mask 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.index-invert 0
+setp hm2_[HOSTMOT2](BOARD).0.encoder.03.filter 0
+
+#A-Axis set PID loop gains from ini file
+setp pid.3.deadband [JOINT_3]DEADBAND
+setp pid.3.Pgain [JOINT_3]P
+setp pid.3.Igain [JOINT_3]I
+setp pid.3.Dgain [JOINT_3]D
+setp pid.3.bias [JOINT_3]BIAS
+setp pid.3.FF0 [JOINT_3]FF0
+setp pid.3.FF1 [JOINT_3]FF1
+setp pid.3.FF2 [JOINT_3]FF2
+setp pid.3.maxoutput [JOINT_3]MAX_OUTPUT
+setp pid.3.maxerror [JOINT_3]MAX_ERROR
+
+#A-Axis position command and feedback
+setp mult2.3.in1 -1           # to invert number
+net emcmot.03.pos-cmd         joint.3.motor-pos-cmd  pid.3.command
+net emcmot.03.vel-cmd         joint.3.vel-cmd   pid.3.command-deriv
+#net motor.03.pos1-fb         hm2_[HOSTMOT2](BOARD).0.stepgen.03.position-fb
+net encoder.03.pos2-fb        mult2.3.in0  hm2_[HOSTMOT2](BOARD).0.encoder.03.position
+#net encoder.03.pos-invert    mult2.3.out  pid.3.feedback  joint.3.motor-pos-fb
+net motor.03.command          pid.3.output hm2_[HOSTMOT2](BOARD).0.stepgen.03.velocity-cmd
+net emcmot.03.enable          and2.21.in0 joint.3.amp-enable-out
+net manual-mode-axis-disable  and2.21.in1
+#net a-axis-enabled            and2.21.out pid.3.enable hm2_[HOSTMOT2](BOARD).0.stepgen.03.enable
+#end A-Axis
+
+
+#Spindle Configuration
+#Spindle pwm configs
+setp hm2_[HOSTMOT2](BOARD).0.pwmgen.00.output-type 1
+setp hm2_[HOSTMOT2](BOARD).0.pwmgen.pwm_frequency 10000
+setp hm2_[HOSTMOT2](BOARD).0.pwmgen.00.scale 5000
+setp hm2_[HOSTMOT2](BOARD).0.pwmgen.00.enable 1
+
+#Spindle encoder configs
+#Idx gives 1 TTL pulse per rev - A & B give 81 pulses per rev
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.counter-mode true
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.vel-timeout  0.5
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.scale 1.350 #Counts per revolution
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.index-mask-invert false
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.index-mask false
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.index-invert false
+setp hm2_[HOSTMOT2](BOARD).0.encoder.05.filter false
+
+#Spindle Position PID loop gains from inifile
+setp pid.5.Pgain [SPINDLE_0_POSITION]P
+setp pid.5.Igain [SPINDLE_0_POSITION]I
+setp pid.5.Dgain [SPINDLE_0_POSITION]D
+setp pid.5.bias [SPINDLE_0_POSITION]BIAS
+setp pid.5.FF0 [SPINDLE_0_POSITION]FF0
+setp pid.5.FF1 [SPINDLE_0_POSITION]FF1
+setp pid.5.FF2 [SPINDLE_0_POSITION]FF2
+setp pid.5.deadband [SPINDLE_0_POSITION]DEADBAND
+setp pid.5.maxoutput [SPINDLE_0_POSITION]MAX_OUTPUT
+setp pid.5.maxerror [SPINDLE_0_POSITION]MAX_ERROR
+setp pid.5.error-previous-target 0
+
+#Spindle Velocity PID loop gains from inifile
+setp pid.6.Pgain [SPINDLE_0_VELOCITY]P
+setp pid.6.Igain [SPINDLE_0_VELOCITY]I
+setp pid.6.Dgain [SPINDLE_0_VELOCITY]D
+setp pid.6.bias [SPINDLE_0_VELOCITY]BIAS
+setp pid.6.FF0 [SPINDLE_0_VELOCITY]FF0
+setp pid.6.FF1 [SPINDLE_0_VELOCITY]FF1
+setp pid.6.FF2 [SPINDLE_0_VELOCITY]FF2
+setp pid.6.deadband [SPINDLE_0_VELOCITY]DEADBAND
+setp pid.6.maxoutput [SPINDLE_0_VELOCITY]MAX_OUTPUT
+setp pid.6.maxerror [SPINDLE_0_VELOCITY]MAX_ERROR
+setp pid.5.error-previous-target 0
+
+#Spindle on/off config
+setp hm2_[HOSTMOT2](BOARD).0.gpio.058.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.058.invert_output true
+#Sindle ON/OFF is configured in probe section
+
+#Spindle Forward for VFD control
+setp hm2_[HOSTMOT2](BOARD).0.gpio.059.is_output true #Forward
+setp hm2_[HOSTMOT2](BOARD).0.gpio.059.invert_output 1
+net spindle-fwd spindle.0.forward => hm2_[HOSTMOT2](BOARD).0.gpio.059.out
+
+#Spindle Reverse for VFD control
+setp hm2_[HOSTMOT2](BOARD).0.gpio.060.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.060.invert_output 1 #Reverse
+net spindle-rev spindle.0.reverse => hm2_[HOSTMOT2](BOARD).0.gpio.060.out
+
+#Spindle revolution count to the motion controller
+
+
+#for postgui.hal speed led and motion control
+setp near.0.difference  10
+#scale from RPS to RPM
+setp scale.0.gain 0.01666667
+
+#Spindle pid.5 is Position pid.6 is Velocity
+net spindle-get-pos          hm2_[HOSTMOT2](BOARD).0.encoder.05.position orient.0.position pid.5.feedback abs.2.in
+net spindle-abs              abs.2.out scale.0.in
+net spindle-scaled-pos       scale.0.out spindle.0.revs
+net spindle-get-vel          hm2_[HOSTMOT2](BOARD).0.encoder.05.velocity pid.6.feedback near.0.in1 spindle.0.speed-in abs.1.in
+net spindle-orient-enable    spindle.0.orient orient.0.enable pid.5.enable mux2.0.sel
+net spindle-angle            spindle.0.orient-angle orient.0.angle
+net spindle-position         orient.0.command pid.5.command
+net spindle-velocity         spindle.0.speed-out pid.6.command near.0.in2
+net Spindle-index-enb        spindle.0.index-enable hm2_[HOSTMOT2](BOARD).0.encoder.05.index-enable
+net spindle-enable           spindle.0.on pid.6.enable hm2_[HOSTMOT2](BOARD).0.gpio.058.out and2.14.in1
+net spindle-vel-output       pid.6.output mux2.0.in0
+net spindle-pos-output       pid.5.output mux2.0.in1
+net spindle-mux-output       mux2.0.out abs.0.in
+net spindle-pwmgen-in        abs.0.out hm2_[HOSTMOT2](BOARD).0.pwmgen.00.value
+net spindle-on-check         near.0.out and2.14.in0
+net pgui_spindle-speed-ok    and2.14.out spindle.0.at-speed
+net pgui_spindle-speed       abs.1.out
+#End Spindle Velocity and Position control
+
+#Limit switches on 7i80 inputs inverted - uses post gui hal
+#A-axis is rotary and does not need limits
+#Z neg limit uses or2 in to merge manual mode for positive Z drive
+net x-pos-limit hm2_[HOSTMOT2](BOARD).0.gpio.036.in_not  and2.1.in0  and2.23.in0  limits-combined.in-00
+net x-pos-limit-bypass     and2.23.out   joint.0.pos-lim-sw-in
+net x-neg-limit hm2_[HOSTMOT2](BOARD).0.gpio.037.in_not  and2.2.in0  and2.24.in0  limits-combined.in-01
+net x-neg-limit-bypass     and2.24.out   joint.0.neg-lim-sw-in
+net y-pos-limit hm2_[HOSTMOT2](BOARD).0.gpio.039.in_not  and2.3.in0  and2.25.in0  limits-combined.in-02
+net y-pos-limit-bypass     and2.25.out   joint.1.pos-lim-sw-in
+net y-neg-limit hm2_[HOSTMOT2](BOARD).0.gpio.038.in_not  and2.4.in0  and2.26.in0  limits-combined.in-03
+net y-neg-limit-bypass     and2.26.out   joint.1.neg-lim-sw-in
+net z-pos-limit hm2_[HOSTMOT2](BOARD).0.gpio.040.in_not  and2.5.in0  and2.27.in0  limits-combined.in-04
+net z-pos-limit-bypass     and2.27.out    joint.2.pos-lim-sw-in
+net z-neg-limit hm2_[HOSTMOT2](BOARD).0.gpio.041.in_not  and2.6.in0  and2.28.in0  limits-combined.in-05
+net z-neg-limit-bypass     and2.28.out    joint.2.neg-lim-sw-in
+#net c-pos-limit hm2_[HOSTMOT2](BOARD).0.gpio.044.in_not  and2.7.in0  and2.29.in0  limits-combined.in-06
+#net c-pos-limit-bypass      and2.29.out   joint.4.pos-lim-sw-in
+#net c-neg-limit hm2_[HOSTMOT2](BOARD).0.gpio.045.in_not  and2.8.in0  and2.30.in0  limits-combined.in-07
+#net c-neg-limit-bypass      and2.30.out   joint.4.neg-lim-sw-in
+setp limits-combined.in-08 0
+setp limits-combined.in-09 0
+
+#For limit indicator led on manual control panel and jog step mode change
+net limit-active or2.2.in0 limits-combined.or
+
+#Enable move axis out of limits automaticaly - uses post gui halsetp timedelay.0.on-delay 1
+#Z axis has additional function in positive direction to enter manual mode.
+#The outputs of the below are used in post hal gui to jog out of limits
+net limits-move-out  not.3.in   hm2_[HOSTMOT2](BOARD).0.gpio.017.in
+net limits-move-out  and2.1.in1 and2.2.in1 and2.3.in1 and2.4.in1 and2.5.in1 and2.6.in1 and2.7.in1 and2.8.in1
+#The below turns off limit for joint or joints in limits after move-out of limits button is pushed
+net limits-override  not.3.out and2.23.in1 and2.24.in1 and2.25.in1 and2.26.in1 and2.27.in1 and2.28.in1 and2.29.in1 and2.30.in1
+
+#Start manual mode
+#Machine must be off to prevent movement commands from linear encoders from entering pid
+#And building up large position errors which will activate when manaual mode
+#is exited. Future work may allow pid to be used to move back to prior positions.
+
+
+#CNC-MAN switch changed to manual mode on control panel
+#Move z axis home to alllow lead screw clamp release - uses gmoccapy jog in post gui hal
+
+setp timedelay.0.on-delay  .150   #delay required for gmoccapy to set jog to continuous if in step
+setp timedelay.0.off-delay .010   #handled in postgui.hal
+setp timedelay.1.on-delay  .010   #delay required for gmoccapy to set jog to continuous if in step
+setp timedelay.1.off-delay .150   #handled in postgui.hal
+setp edge.0.both FALSE
+setp edge.0.in-edge TRUE
+setp edge.0.out-width-ns 10
+setp oneshot.0.width .150
+
+net manual-mode-sel-norm     timedelay.0.in   hm2_[HOSTMOT2](BOARD).0.gpio.011.in_not  #man mode switch
+net manual-mode-jog-cont     timedelay.0.out  and2.11.in0   edge.0.in oneshot.0.reset
+net manual-mode-reset        edge.0.out       flipflop.0.reset
+net manual-mode-check        and2.11.in1      halui.mode.is-manual
+net manual-mode-check-ok     and2.11.out      and2.12.in0
+net z-home                   and2.12.in1      and2.15.in0                #z home switch
+net manual-mode-home-ok      and2.12.out      flipflop.0.set
+net manual-mode-chg-ok       flipflop.0.out   not.0.in        and2.13.in0
+net manual-mode-disable-on   and2.13.in1      motion.motion-enabled      #work around for gmoccapy can turn on
+net manual-mode-mach-off     and2.13.out      halui.machine.off          #work around for gmoccapy can turn on
+net manual-mode-axis-disable not.0.out        oneshot.0.in               #motors/pid enable/disable - pwr-re-enable
+net manual-mode-pow-rstr     and2.15.in1      oneshot.0.out  #pwr-re-enable
+
+#machine power control
+net manual-mode-pow-exit  or2.3.in0   and2.15.out     #exit manual mode pwr-re-enable
+net limits-move-out       or2.3.in1
+net turn-machine-on       or2.3.out   halui.machine.on
+#End manual mode - middle line for control panel MOV OUT LIM button
+
+#Probe triggers and spindle probe connector status monitor - also disables spindle
+#setp hm2_[HOSTMOT2](BOARD).0.gpio.062.is_output true
+#setp hm2_[HOSTMOT2](BOARD).0.gpio.062.invert_output 0
+net probe-table-in        mux-gen.00.in-bit-00   hm2_[HOSTMOT2](BOARD).0.gpio.061.in_not
+net pgui_probe-spindle-in mux-gen.00.in-bit-01   hm2_[HOSTMOT2](BOARD).0.gpio.062.in_not
+net probe-spindle-sel     mux-gen.00.sel-bit-00  hm2_[HOSTMOT2](BOARD).0.gpio.063.in  spindle.0.inhibit
+net probe-output          mux-gen.00.out-bit     motion.probe-input
+
+#home switches and homing
+net x-home            hm2_[HOSTMOT2](BOARD).0.gpio.048.in_not          joint.0.home-sw-in
+net home-index-enb0   hm2_[HOSTMOT2](BOARD).0.encoder.00.index-enable  joint.0.index-enable
+net y-home            hm2_[HOSTMOT2](BOARD).0.gpio.049.in_not          joint.1.home-sw-in
+net home-index-enb1   hm2_[HOSTMOT2](BOARD).0.encoder.01.index-enable  joint.1.index-enable
+net z-home            hm2_[HOSTMOT2](BOARD).0.gpio.050.in_not          joint.2.home-sw-in
+net home-index-enb2   hm2_[HOSTMOT2](BOARD).0.encoder.02.index-enable  joint.2.index-enable
+net a-home            hm2_[HOSTMOT2](BOARD).0.gpio.051.in_not          joint.3.home-sw-in
+net home-index-enb3   hm2_[HOSTMOT2](BOARD).0.encoder.03.index-enable  joint.3.index-enable
+#net u-home           hm2_[HOSTMOT2](BOARD).0.gpio.052.in_not          joint.4.home-sw-in
+#net home-index-enb4  hm2_[HOSTMOT2](BOARD).0.encoder.04.index-enable  joint.4.index-enable
+
+#Notes on Relays
+# Relay 1 ESTOP output on IO 046
+# Relay 2 Servo Amp error is controlled by Servo Amp error outputs - hard wired
+# Relay 3 Servo Reset is IO 064
+# Relay 4 In limits is IO 065
+# Relay 5 Is not wired
+# Relay 6 Flood Cool is IO 66
+# Relay 7 Mist cool is IO 67
+# Relay 8 Spindle AC power on/off is IO 068
+# Axis Motor Power Supply on/off is IO 069
+
+#Relay 1 - Estop logic Internal and External
+setp hm2_[HOSTMOT2](BOARD).0.gpio.046.is_output true                      #To control panel
+net estop-int0 and2.0.in0 <= iocontrol.0.user-enable-out             #Internal Estop
+net estop-ext0 and2.0.in1 <= hm2_[HOSTMOT2](BOARD).0.gpio.047.in     #From control panel
+net estop-out  and2.0.out iocontrol.0.emc-enable-in => hm2_[HOSTMOT2](BOARD).0.gpio.046.out
+
+#Relay 2 - Is hard wired in Servo box to servo drives error combined outputs.
+net servo-error <= hm2_[HOSTMOT2](BOARD).0.gpio.005.in_not
+#net servo-error joint.0.amp-fault-in  joint.1.amp-fault-in  joint.2.amp-fault-in  joint.3.amp-fault-in  joint.4.amp-fault-in
+net servo-error joint.0.amp-fault-in  joint.1.amp-fault-in  joint.2.amp-fault-in  joint.3.amp-fault-in
+
+#Relay 3 - Servo Drivers Reset - disables all drives
+setp hm2_[HOSTMOT2](BOARD).0.gpio.064.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.064.invert_output 1
+net manual-mode-axis-disable => hm2_[HOSTMOT2](BOARD).0.gpio.064.out
+
+#Relay 4 - In limits indicator for control panel
+setp hm2_[HOSTMOT2](BOARD).0.gpio.065.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.065.invert_output 1
+net pgui_limit-active => hm2_[HOSTMOT2](BOARD).0.gpio.065.out
+
+#Relay 5 not wired
+
+#Relay 6 Coolant flood
+#iocontrol.0.coolant-flood
+setp hm2_[HOSTMOT2](BOARD).0.gpio.067.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.067.invert_output 1
+net coolant-flood iocontrol.0.coolant-flood => hm2_[HOSTMOT2](BOARD).0.gpio.067.out
+
+#Relay 7 Coolant Mist
+setp hm2_[HOSTMOT2](BOARD).0.gpio.068.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.068.invert_output 1
+net coolant-mist iocontrol.0.coolant-mist => hm2_[HOSTMOT2](BOARD).0.gpio.068.out
+
+#Relay 8  Spindle AC power on/off SSR in power panel
+setp hm2_[HOSTMOT2](BOARD).0.gpio.069.is_output true
+setp hm2_[HOSTMOT2](BOARD).0.gpio.069.invert_output 1
+net manual-mode-disable-on  or2.1.in0  #power on for CNC-mode spindle-vfd-power
+net manual-mode-check-ok    or2.1.in1  #power on for manual mode spindle-vfd-power
+net spindle-vfd-on or2.1.out => hm2_[HOSTMOT2](BOARD).0.gpio.069.out
+#======ADD OR for manual mode ===============
+#END
