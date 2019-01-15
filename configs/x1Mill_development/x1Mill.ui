@@ -231,23 +231,24 @@ BOARD</string>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <widget class="PushButton" name="pb_f1_spare_2">
+     <widget class="PushButton" name="pb_f1_enable_motors">
       <property name="geometry">
        <rect>
         <x>3</x>
-        <y>70</y>
+        <y>271</y>
         <width>63</width>
         <height>64</height>
        </rect>
       </property>
       <property name="text">
-       <string>SPARE-2</string>
+       <string>ENABLE
+MOTORS</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
       </property>
      </widget>
-     <widget class="PushButton" name="pb_f1_spare_1">
+     <widget class="PushButton" name="pb_f1_spare">
       <property name="geometry">
        <rect>
         <x>3</x>
@@ -257,7 +258,7 @@ BOARD</string>
        </rect>
       </property>
       <property name="text">
-       <string>SPARE-1</string>
+       <string>SPARE</string>
       </property>
       <property name="checkable">
        <bool>true</bool>
@@ -283,7 +284,7 @@ BOARD</string>
       <property name="geometry">
        <rect>
         <x>3</x>
-        <y>271</y>
+        <y>204</y>
         <width>63</width>
         <height>64</height>
        </rect>
@@ -302,7 +303,7 @@ BOARD</string>
       <property name="geometry">
        <rect>
         <x>3</x>
-        <y>204</y>
+        <y>137</y>
         <width>63</width>
         <height>64</height>
        </rect>
@@ -321,7 +322,7 @@ BOARD</string>
       <property name="geometry">
        <rect>
         <x>3</x>
-        <y>137</y>
+        <y>70</y>
         <width>63</width>
         <height>64</height>
        </rect>
@@ -467,6 +468,13 @@ ESTOP</string>
       </property>
       <property name="python_command_option" stdset="0">
        <bool>false</bool>
+      </property>
+      <property name="on_color" stdset="0">
+       <color>
+        <red>0</red>
+        <green>199</green>
+        <blue>255</blue>
+       </color>
       </property>
       <property name="true_python_cmd_string" stdset="0">
        <string/>
@@ -4636,7 +4644,7 @@ SCOPE</string>
         </rect>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="sw1_0_spindles_dro_f5_to_f9">
         <widget class="QFrame" name="frame_spindle_and_dro">
@@ -8059,7 +8067,7 @@ Jog Ovr</string>
         <enum>QFrame::Raised</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="graph_f10sw_0">
         <widget class="QFrame" name="frame_gcode_graphics">
@@ -8391,7 +8399,7 @@ In</string>
         </widget>
        </widget>
        <widget class="QWidget" name="homing_f10sw_1">
-        <widget class="QFrame" name="frame_homing">
+        <widget class="QFrame" name="homing_panel">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -8406,26 +8414,140 @@ In</string>
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <widget class="QLabel" name="lab_homing_panel_not_done">
+         <widget class="QFrame" name="frame_2">
           <property name="geometry">
            <rect>
-            <x>60</x>
-            <y>150</y>
-            <width>481</width>
-            <height>51</height>
+            <x>48</x>
+            <y>344</y>
+            <width>503</width>
+            <height>44</height>
            </rect>
           </property>
-          <property name="font">
-           <font>
-            <pointsize>12</pointsize>
-           </font>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
           </property>
-          <property name="text">
-           <string>put  homing all and homing  by axis on this panel  600x400</string>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
           </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
+          <widget class="PushButton" name="pb_f10sw3_1_home_spare">
+           <property name="geometry">
+            <rect>
+             <x>422</x>
+             <y>0</y>
+             <width>80</width>
+             <height>44</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>SPARE</string>
+           </property>
+          </widget>
+          <widget class="PushButton" name="pb_f10sw3_1_home_xyz">
+           <property name="geometry">
+            <rect>
+             <x>1</x>
+             <y>0</y>
+             <width>80</width>
+             <height>44</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HOME
+X  Y  Z</string>
+           </property>
+          </widget>
+          <widget class="PushButton" name="pb_f10sw3_1_home_a">
+           <property name="geometry">
+            <rect>
+             <x>338</x>
+             <y>0</y>
+             <width>80</width>
+             <height>44</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HOME
+A</string>
+           </property>
+          </widget>
+          <widget class="PushButton" name="pb_f10sw3_1_home_y">
+           <property name="geometry">
+            <rect>
+             <x>169</x>
+             <y>0</y>
+             <width>80</width>
+             <height>44</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HOME
+Y</string>
+           </property>
+          </widget>
+          <widget class="PushButton" name="pb_f10sw3_1_home_x">
+           <property name="geometry">
+            <rect>
+             <x>85</x>
+             <y>0</y>
+             <width>80</width>
+             <height>44</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HOME
+X</string>
+           </property>
+          </widget>
+          <widget class="PushButton" name="pb_f10sw3_1_home_z">
+           <property name="geometry">
+            <rect>
+             <x>253</x>
+             <y>0</y>
+             <width>80</width>
+             <height>44</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>HOME
+Z</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QFrame" name="homing_graphics_panel">
+          <property name="geometry">
+           <rect>
+            <x>46</x>
+            <y>3</y>
+            <width>508</width>
+            <height>338</height>
+           </rect>
           </property>
+          <property name="frameShape">
+           <enum>QFrame::WinPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="GCodeGraphics" name="gcodegraphics_2">
+           <property name="geometry">
+            <rect>
+             <x>4</x>
+             <y>4</y>
+             <width>500</width>
+             <height>330</height>
+            </rect>
+           </property>
+           <property name="_dro" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="background_color" stdset="0">
+            <color alpha="146">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </property>
+          </widget>
          </widget>
         </widget>
        </widget>
@@ -8819,10 +8941,10 @@ In</string>
    </hints>
   </connection>
   <connection>
-   <sender>pb_f1_spare_2</sender>
+   <sender>pb_f1_enable_motors</sender>
    <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>pb_f1_spare_2_toggle()</slot>
+   <slot>pb_f1_enable_motors_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>0</x>
@@ -8835,10 +8957,10 @@ In</string>
    </hints>
   </connection>
   <connection>
-   <sender>pb_f1_spare_1</sender>
+   <sender>pb_f1_spare</sender>
    <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>pb_f1_spare_1_toggle()</slot>
+   <slot>pb_f1_spare_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>0</x>
@@ -13010,11 +13132,107 @@ In</string>
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pb_f10sw3_1_home_xyz</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f10sw3_1_home_xyz_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>9</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_f10sw3_1_home_x</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f10sw3_1_home_x_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_f10sw3_1_home_y</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f10sw3_1_home_y_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_f10sw3_1_home_z</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f10sw3_1_home_z_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_f10sw3_1_home_a</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f10sw3_1_home_a_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_f10sw3_1_home_spare</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f10sw3_1_home_spare_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>0</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>pb_f0_estop_toggle()</slot>
-  <slot>pb_f1_spare_2_toggle()</slot>
-  <slot>pb_f1_spare_1_toggle()</slot>
+  <slot>pb_f1_enable_motors_toggle()</slot>
+  <slot>pb_f1_spare_toggle()</slot>
   <slot>pb_f1_power_toggle()</slot>
   <slot>pb_f1_manual_toggle()</slot>
   <slot>pb_f1_mdi_toggle()</slot>
@@ -13138,6 +13356,12 @@ In</string>
   <slot>pb_f10sw3_0_graph_z2_toggle()</slot>
   <slot>pb_f10sw3_0_graph_p_toggle()</slot>
   <slot>pb_f10sw3_0_graph_clear_clicked()</slot>
+  <slot>pb_f10sw3_1_home_xyz_toggle()</slot>
+  <slot>pb_f10sw3_1_home_x_toggle()</slot>
+  <slot>pb_f10sw3_1_home_y_toggle()</slot>
+  <slot>pb_f10sw3_1_home_z_toggle()</slot>
+  <slot>pb_f10sw3_1_home_a_toggle()</slot>
+  <slot>pb_f10sw3_1_home_spare_toggle()</slot>
   <slot>lab_f11s4_0_mcode_list_setText()</slot>
   <slot>lab_f11s4_0_gcode_lis_setText()</slot>
   <slot>lab_f11s4_0_tool_comment_setText()</slot>

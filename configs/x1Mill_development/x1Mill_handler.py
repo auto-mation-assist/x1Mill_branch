@@ -1,3 +1,4 @@
+# 01-14-2019 22:07 Alaska time
 # x1Mill_handler.py for the associated x1Mill.ui
 # Copyright (c) 2018 Johannes P Fassotte
 # This gui is for use with linuxcnc QTVcp by Chris Morley
@@ -24,13 +25,16 @@
 #
 # You should print out the below info - Do not delete it
 
-# >>>> indents are: Tab 4
+
+# >>>> indents are: Tab 4 <<<< #
+# ============================ #
 
 # machine related variables - values are -1 untill updated
 # -------------------------------------------------------------------------
 # machine_control[0] machine units: 0 = inch, 1 = metric - from ini file and verified
 # machine_control[1] angular units: deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
 # machine_control[2] units convert: 0 = convert to inch, 1 = convert to metric
+# machine_control[3] homing all selected: 0 = False 1 = True
 
 # Jogging control info - values are -1 at start up or have not been updated
 # -------------------------------------------------------------------------
@@ -47,7 +51,7 @@
 # jogging_control[10]	=  current linear increment index
 # jogging_control[12]	=  angular increment value (float)
 # jogging_control[13]	=  current angular increment index
-
+# jogging_control[14]	=  -1 = no position mdi move 1 = mdi move in progress
 
 # inch jogging increments
 # -------------------------------------------------------------------------
@@ -79,7 +83,7 @@ from qtvcp.widgets.tool_offsetview import ToolOffsetView as TOOLVIEW_WIDGET
 from qtvcp.widgets.dialog_widget import CamViewDialog as CAMVIEW
 from qtvcp.widgets.dialog_widget import MacroTabDialog as LATHEMACRO
 from qtvcp.widgets.mdi_line import MDILine as MDI_WIDGET
-from qtvcp.widgets.gcode_editor import GcodeEditor as GCODE
+#####from qtvcp.widgets.gcode_editor import GcodeEditor as GCODE
 from qtvcp.lib.keybindings import Keylookup
 from qtvcp.lib.notify import Notify
 from qtvcp.core import Status, Action
@@ -148,10 +152,10 @@ class x1m_preferences(cp1):
 class HandlerClass:
 	def __init__(self, halcomp,widgets,paths):
 		self.hal = halcomp
-		self.w = widgets
-		self.stat = linuxcnc.stat()
-		self.cmnd = linuxcnc.command()
-		self.error = linuxcnc.error_channel()
+		self.w   = widgets
+		self.s   = linuxcnc.stat()
+		self.c   = linuxcnc.command()
+		self.e   = linuxcnc.error_channel()
 
 		# connect to GStat to catch linuxcnc events
 		STATUS.connect('state-on', self.on_state_on)
@@ -159,7 +163,7 @@ class HandlerClass:
 		STATUS.connect('periodic', self.on_periodic)
 
 		self.e = linuxcnc.error_channel()
-		self.stat.poll()
+		self.s.poll()
 		self.e.poll()
 
 	def error_poll(self):
@@ -216,8 +220,8 @@ class HandlerClass:
 
 # 		jogging buttons and cmd lists
 	def	setup_jogging(self):
-		self.jogging_control = range(14)			# controls all jogging functions
-		self.jogging_control[0:] = [-1] * 14
+		self.jogging_control = range(15)			# controls all jogging functions
+		self.jogging_control[0:] = [-1] * 15
 		self.jog_linear_buttons	= range(21)			# linear match value cmd list
 		self.jog_linear_buttons[0:]	= [-1] * 21
 		self.jog_angular_buttons = range(21)		# angular match value cmd list
@@ -229,8 +233,8 @@ class HandlerClass:
 
 
 	def get_general_info(self):
-		self.machine_control = range(2)
-		self.machine_control[0:] = [-1] * 2
+		self.machine_control = range(4)
+		self.machine_control[0:] = [-1] * 4
 		mach_units_linear = self.inifile.find('TRAJ', 'LINEAR_UNITS')
 		mach_units_angular = self.inifile.find('TRAJ', 'ANGULAR_UNITS')
 		if mach_units_linear in ['in', 'inch', 'imperial']:
@@ -247,8 +251,8 @@ class HandlerClass:
 	def startup_disables(self):
 		self.w.pb_f0_estop.setChecked(True)
 		self.w.pb_f1_power.setChecked(False)
-		startup_data = ['pb_f1_power','pb_f1_manual','pb_f1_mdi','pb_f1_auto','pb_f1_spare_2',
-						'pb_f1_spare_1','pb_f2_keyboard','pb_f2_spare','pb_f3_graphic',
+		startup_data = ['pb_f1_power','pb_f1_manual','pb_f1_mdi','pb_f1_auto','pb_f1_enable_motors',
+						'pb_f1_spare','pb_f2_keyboard','pb_f2_spare','pb_f3_graphic',
 						'pb_f3_homing','pb_f3_tool','pb_f3_probe','pb_f3_tool_offsets',
 						'pb_f3_origin_offsets','pb_f3_macro','pb_f3_edit_gcode',
 						'pb_f3_camview','pb_f3_file','pb_f4_flood','pb_f4_mist','pb_f4_aux',
@@ -292,8 +296,8 @@ class HandlerClass:
 			exec btn
 
 #		enable these buttons based on power on or off
-		data = ['pb_f1_manual','pb_f1_mdi','pb_f1_auto','pb_f1_spare_2',
-				'pb_f1_spare_1','pb_f2_keyboard','pb_f2_spare','pb_f3_graphic',
+		data = ['pb_f1_manual','pb_f1_mdi','pb_f1_auto','pb_f1_enable_motors',
+				'pb_f1_spare','pb_f2_keyboard','pb_f2_spare','pb_f3_graphic',
 				'pb_f3_homing','pb_f3_tool','pb_f3_probe','pb_f3_tool_offsets',
 				'pb_f3_origin_offsets','pb_f3_macro','pb_f3_edit_gcode',
 				'pb_f3_camview','pb_f3_file','pb_f4_flood','pb_f4_mist','pb_f4_aux',
@@ -312,9 +316,9 @@ class HandlerClass:
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
 		if enable == True:
-			self.cmnd.state(linuxcnc.STATE_ON)
+			self.c.state(linuxcnc.STATE_ON)
 		if enable == False:
-			self.cmnd.state(linuxcnc.STATE_OFF)
+			self.c.state(linuxcnc.STATE_OFF)
 
 #		startup hide these buttons until each is called
 	def startup_hide(self):
@@ -392,33 +396,6 @@ class HandlerClass:
 	# linear units:  machine_control[0], in=0, inch=0, imperial=0, mm=1, metric=1
 	# angular units: machine_control[1], deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
 	# units convert: machine_control[2], 0=no conversion, 1=convert to inch, 2=convert to metric
-
-	def get_general_info(self):
-		self.machine_control = range(3)
-		self.machine_control[0:] = [-1] * 3
-		mach_units_linear = self.inifile.find('TRAJ', 'LINEAR_UNITS')
-		mach_units_angular = self.inifile.find('TRAJ', 'ANGULAR_UNITS')
-		if mach_units_linear in ['in', 'inch', 'imperial']:
-			self.machine_control[0] = 0  # machine unis are in inches
-		if mach_units_linear in ['mm', 'metric']:
-			self.machine_control[0] = 1  # machine unis are in mm
-		self.machine_control[1]=['deg','degree','rad','radian','grad','gon'].index(mach_units_angular)
-		# angular units: deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
-		self.machine_control[2] = 0      # no inch or metric conversion
-
-		self.w.pb_f2_keyboard.setEnabled(False)
-		self.w.pb_f12s5_0_jog_pos_a.setEnabled(False)
-		self.w.pb_f12s5_0_jog_neg_a.setEnabled(False)
-
-# 		get tool change sensor settings - from ini file
-#	def get_tool_sensor_data(self):
-#		xpos = self.inifile.find('TOOLSENSOR', 'X')
-#		ypos = self.inifile.find('TOOLSENSOR', 'Y')
-#		zpos = self.inifile.find('TOOLSENSOR', 'Z')
-#		maxprobe = self.inifile.find('TOOLSENSOR', 'MAXPROBE')
-#		tsdiam = self.inifile.find('TOOLSENSOR', 'TS_DIAMETER')
-#		revrott = self.inifile.find('TOOLSENSOR', 'REV_ROTATION_SPEED') # spindle reverse rotation
-#		return xpos, ypos, zpos, maxprobe, tsdiam, revrott
 
 
 ##### Start loading values from 'ini' file now #####
@@ -808,26 +785,67 @@ class HandlerClass:
 
 
 # 		periodic updates
-
+# ===================================================================
 	def on_periodic(self,w):
-		self.stat.poll()
+		self.s.poll()
 		self.update_dros()
 		self.update_gcodes()
 		self.update_mcodes()
 		self.update_spindles()
 		self.update_limits_label()
-		self.w.lab_f11s4_0_feed_rate.setText('%.2f' %(float(self.stat.current_vel * 100)))
-		self.w.lab_f12s5_2_gcode_motion_line.setText(str(int(self.stat.motion_line)))
-		self.w.lab_f12s5_2_gcode_current_line.setText(str(int(self.stat.current_line)))
-		self.w.lab_f11s4_0_tool_number.setText(str(int(self.stat.tool_in_spindle)))
+		self.w.lab_f11s4_0_feed_rate.setText('%.2f' %(float(self.s.current_vel * 100)))
+		self.w.lab_f12s5_2_gcode_motion_line.setText(str(int(self.s.motion_line)))
+		self.w.lab_f12s5_2_gcode_current_line.setText(str(int(self.s.current_line)))
+		self.w.lab_f11s4_0_tool_number.setText(str(int(self.s.tool_in_spindle)))
 		self.interp_state()
+		self.safe_home_all()
+		self.mdi_to_manual()
+		print self.jogging_control
 
 		self.w.lab_f4_time_date.setText(strftime('%H:%M:%S\n%m/%d/%Y'))
 		return True
+# ===================================================================
+	def mdi_to_manual(self):
+		if self.jogging_control[14] == -1:
+			return
+		if self.jogging_control[14] == 1:
+			if self.s.inpos == True:
+				# task_mode: manual = 1, auto = 2, midi = 3
+				if self.s.task_mode == 3:
+					self.c.mode(linuxcnc.MODE_MANUAL)
+					self.jogging_control[14] = -1
+					print "mdi position cmd completed"
+
+	def safe_home_all(self):
+		if self.s.estop == 1: self.machine_control[3] = -1
+		if self.machine_control[3] == -1:
+			return
+		if self.machine_control[3] == 1:
+			data = range(9)
+			data[0:] = [','] * 9
+			data = self.s.homed
+			self.c.home(2)
+			self.c.wait_complete()
+			self.machine_control[3] = 2
+		data = self.s.homed
+		if data[2] == 1:
+			if self.machine_control[3] == 2:
+				print 'z is homed' #, data
+				self.c.home(0)
+				self.c.home(1)
+				self.c.wait_complete()
+				self.machine_control[3] = 3
+		if self.machine_control[3] == 3:
+			if data[0] == 1:
+				print 'x is homed' #, data
+			if data[1] == 1:
+				print 'y is homed' #, data
+			self.machine_control[3] = -1
+
 
 #		update interpreter status display
 	def interp_state(self):
-		state = self.stat.interp_state
+		state = self.s.interp_state
 		interp = 'x1Gui v1.0.1'
 		if state == 1:
 			interp = 'IDLE'
@@ -841,11 +859,11 @@ class HandlerClass:
 
 #		update the in limits label on front panel to indicate which axis is in limits
 	def update_limits_label(self):
-		if self.stat.limit[0] > 0:
+		if self.s.limit[0] > 0:
 			self.w.plab_f12s7_0_limits_label.setText('X LIM')
-		elif self.stat.limit[1] > 0:
+		elif self.s.limit[1] > 0:
 			self.w.plab_f12s7_0_limits_label.setText('Y LIM')
-		elif self.stat.limit[2] > 0:
+		elif self.s.limit[2] > 0:
 			self.w.plab_f12s7_0_limits_label.setText('Z LIM')
 		else:
 			self.w.plab_f12s7_0_limits_label.setText('No Lim')
@@ -856,27 +874,27 @@ class HandlerClass:
 
 #		periodic dro updates
 	def update_dros(self):
-		actualpos0 = '%.4f' %(self.stat.actual_position[0])
-		actualpos1 = '%.4f' %(self.stat.actual_position[1])
-		actualpos2 = '%.4f' %(self.stat.actual_position[2])
-		actualpos3 = '%.4f' %(self.stat.actual_position[3])
+		actualpos0 = '%.4f' %(self.s.actual_position[0])
+		actualpos1 = '%.4f' %(self.s.actual_position[1])
+		actualpos2 = '%.4f' %(self.s.actual_position[2])
+		actualpos3 = '%.4f' %(self.s.actual_position[3])
 
-		dtg0 = '%.4f' %(self.stat.dtg[0])
-		dtg1 = '%.4f' %(self.stat.dtg[1])
-		dtg2 = '%.4f' %(self.stat.dtg[2])
-		dtg3 = '%.4f' %(self.stat.dtg[3])
+		dtg0 = '%.4f' %(self.s.dtg[0])
+		dtg1 = '%.4f' %(self.s.dtg[1])
+		dtg2 = '%.4f' %(self.s.dtg[2])
+		dtg3 = '%.4f' %(self.s.dtg[3])
 
-		position0 = '%.4f' %(self.stat.position[0])
-		position0 = '%.4f' %(self.stat.position[1])
-		position0 = '%.4f' %(self.stat.position[2])
-		position0 = '%.4f' %(self.stat.position[3])
+		position0 = '%.4f' %(self.s.position[0])
+		position0 = '%.4f' %(self.s.position[1])
+		position0 = '%.4f' %(self.s.position[2])
+		position0 = '%.4f' %(self.s.position[3])
 
 
 #		periodic gcodes update
 	def update_gcodes(self):
 		gcode_list=''
 		gcodes = []
-		for i in self.stat.gcodes[1:]:
+		for i in self.s.gcodes[1:]:
 			if i == -1: continue
 			if i % 10 == 0:
 				gcodes.append('G%d' % (i/10))
@@ -889,7 +907,7 @@ class HandlerClass:
 	def update_mcodes(self):
 		mcode_list=''
 		mcodes = []
-		for i in self.stat.mcodes[1:]:
+		for i in self.s.mcodes[1:]:
 			if i == -1: continue
 			mcodes.append('M%d' % i)
 		mcode_list = ' '.join(mcodes)
@@ -909,11 +927,12 @@ class HandlerClass:
 
 #		ensure proper mode
 	def ensure_mode(self,m, *p):
-		self.stat.poll()
-		if self.stat.task_mode == m or self.stat.task_mode in p: return True
-		self.cmnd.mode(m) # task_mode
-		self.cmnd.wait_complete()
-		self.stat.poll()
+		self.s.poll()
+		# task_mode: manual = 1, auto = 2, midi = 3
+		if self.s.task_mode == m or self.s.task_mode in p: return True
+		self.c.mode(m) # task_mode
+		self.c.wait_complete()
+		self.s.poll()
 		return True
 
 # Start of gui buttons and other items
@@ -958,10 +977,16 @@ class HandlerClass:
 			self.spindle_1(enable)
 			self.linear_jog_btns(enable)
 
+	def pb_f1_enable_motors_toggle(self,pressed):
+		# hal pin: x1mill_p.pb_f1_enable_motors
+		if pressed:
+			name = self.w.sender().text()
+			print name
+
 	def pb_f1_manual_toggle(self,pressed):
 		if pressed:
-			self.cmnd.mode(linuxcnc.MODE_MANUAL)
-			self.cmnd.wait_complete()
+			self.c.mode(linuxcnc.MODE_MANUAL)
+			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(0)
 			self.w.pb_f2_keyboard.setEnabled(False)
 			self.w.pb_f3_graphic.animateClick(True)
@@ -972,31 +997,25 @@ class HandlerClass:
 
 	def pb_f1_mdi_toggle(self,pressed):
 		if pressed:
-			self.cmnd.mode(linuxcnc.MODE_MDI)
-			self.cmnd.wait_complete()
+			self.c.mode(linuxcnc.MODE_MDI)
+			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(1)
 			self.w.pb_f2_keyboard.setEnabled(True)
 			print 'mdi mode'
 
 	def pb_f1_auto_toggle(self,pressed):
 		if pressed:
-			self.cmnd.mode(linuxcnc.MODE_AUTO)
-			self.cmnd.wait_complete()
+			self.c.mode(linuxcnc.MODE_AUTO)
+			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(2)
 			self.w.pb_f2_keyboard.setEnabled(False)
-			file_name = str(self.stat.file)
+			file_name = str(self.s.file)
 			enable = '.ngc' in file_name
 			self.auto_no_file(enable)
 			print 'auto mode'
 
-	def pb_f1_spare_2_toggle(self,pressed):
-		# hal pin: x1mill_p.pb_f1_spare_2
-		if pressed:
-			name = self.w.sender().text()
-			print name
-
-	def pb_f1_spare_1_toggle(self,pressed):
-		# hal pin: x1mill_p.pb_f1_spare_1
+	def pb_f1_spare_toggle(self,pressed):
+		# hal pin: x1mill_p.pb_f1_spare
 		if pressed:
 			name = self.w.sender().text()
 			print name
@@ -1020,8 +1039,8 @@ class HandlerClass:
 		print name
 
 	def pb_f2_exit_toggle(self):
-		self.cmnd.state(linuxcnc.STATE_OFF)
-		self.cmnd.wait_complete()
+		self.c.state(linuxcnc.STATE_OFF)
+		self.c.wait_complete()
 
 #		the onboard keyboard did not work out so this is not needed
 #		as is but saved for potential use
@@ -1045,8 +1064,7 @@ class HandlerClass:
 			self.w.stackedWidget_3.setCurrentIndex(1)
 			self.w.stackedWidget_4.setCurrentIndex(0)
 			self.w.pb_f1_manual.animateClick(True)
-			self.cmnd.mode(linuxcnc.MODE_MANUAL)
-			self.cmnd.home(-1)
+			self.c.mode(linuxcnc.MODE_MANUAL)
 
 	def pb_f3_tool_toggle(self, pressed):
 		if pressed:
@@ -1095,16 +1113,16 @@ class HandlerClass:
 	def pb_f4_flood_toggle(self,pressed):
 		# hal pin: x1mill_p.pb_f4_flood
 		if pressed:
-			self.cmnd.flood(1)
+			self.c.flood(1)
 		else:
-			self.cmnd.flood(0)
+			self.c.flood(0)
 
 	def pb_f4_mist_toggle(self,pressed):
 		# hal pin: x1mill_p.pb_f4_mist
 		if pressed:
-			self.cmnd.mist(1)
+			self.c.mist(1)
 		else:
-			self.cmnd.mist(0)
+			self.c.mist(0)
 
 	def pb_f4_aux_toggle(self,pressed):
 		# hal pin: x1mill_p.pb_f4_aux
@@ -1156,7 +1174,7 @@ class HandlerClass:
 		self.w.scrb_f6s2_0_spindle_1_rpm.setValue(float(self.values_qs1[3])*100)
 	def scrb_f6s2_0_spindle_1_rpm_setValue(self,value):
 		spin_1_rps = float(value)/10000
-		self.cmnd.spindleoverride(spin_1_rps,1)
+		self.c.spindleoverride(spin_1_rps,1)
 		self.w.lab_f6s2_0_spindle_1_rpm.setText(str(self.w.scrb_f6s2_0_spindle_1_rpm.value()/100))
 	def scrb_f6s2_0_spindle_1_rpm_valueChanged(self):
 		   value1 = self.w.sender().value()
@@ -1165,13 +1183,13 @@ class HandlerClass:
 #		   self.w.pbar_f6s2_0_spindle_1_rpm_setValue(value1)
 	def pb_f6s2_0_spindle_1_forward_toggle(self,pressed):
 		if pressed:
-			self.cmnd.spindle(1,400,1) # dir/speed/spindle
+			self.c.spindle(1,400,1) # dir/speed/spindle
 	def pb_f6s2_0_spindle_1_stop_toggle(self,pressed):
 		if pressed:
-			self.cmnd.spindle(0,1)
+			self.c.spindle(0,1)
 	def pb_f6s2_0_spindle_1_reverse_toggle(self,pressed):
 		if pressed:
-			self.cmnd.spindle(-1,400,1) # dir/speed/spindle
+			self.c.spindle(-1,400,1) # dir/speed/spindle
 
 # F6 	Index 1 stackedWidget_2
 	def pb_f6s2_1_joint_zero_x_click(self):
@@ -1392,7 +1410,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_pos_x_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog X neg
 	def pb_f12s5_0_jog_neg_x_pressed(self):
@@ -1403,7 +1421,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_neg_x_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog Y pos
 	def pb_f12s5_0_jog_pos_y_pressed(self):
@@ -1414,7 +1432,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_pos_y_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog Y neg
 	def pb_f12s5_0_jog_neg_y_pressed(self):
@@ -1425,7 +1443,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_neg_y_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog Z pos
 	def pb_f12s5_0_jog_pos_z_pressed(self):
@@ -1436,7 +1454,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_pos_z_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog Z neg
 	def pb_f12s5_0_jog_neg_z_pressed(self):
@@ -1447,7 +1465,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_neg_z_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog A pos
 	def pb_f12s5_0_jog_pos_a_pressed(self):
@@ -1458,7 +1476,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_pos_a_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 		# jog A neg
 	def pb_f12s5_0_jog_neg_a_pressed(self):
@@ -1469,7 +1487,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_neg_a_released(self):
 		if self.jogging_control[8] == 0:
 			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 #		continuous jogging mode
 	def jog_continuous(self,axisjoint,direction,distance=0):
@@ -1480,7 +1498,7 @@ class HandlerClass:
 			velocity = STATUS.get_jograte()/100
 			if direction == -1:
 				velocity = velocity * -1
-			self.cmnd.jog(linuxcnc.JOG_CONTINUOUS,jointflag,axisjoint,velocity)
+			self.c.jog(linuxcnc.JOG_CONTINUOUS,jointflag,axisjoint,velocity)
 		if self.jogging_control[0] == 3:
 			print 'jog continuous angular'
 			self.w.stackedWidget_7.setCurrentIndex(0)
@@ -1488,7 +1506,7 @@ class HandlerClass:
 			velocity = STATUS.get_jograte_angular()/100
 			if direction == -1:
 				velocity = velocity * -1
-			self.cmnd.jog(linuxcnc.JOG_CONTINUOUS,jointflag,axisjoint,velocity)
+			self.c.jog(linuxcnc.JOG_CONTINUOUS,jointflag,axisjoint,velocity)
 
 #		increment jogging mode
 	def jog_step(self,axisjoint,direction,distance=0):
@@ -1500,7 +1518,7 @@ class HandlerClass:
 			distance = STATUS.get_jog_increment()
 			if direction == -1:
 				velocity = velocity * -1
-			self.cmnd.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,velocity,distance)
+			self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,velocity,distance)
 		if self.jogging_control[0] == 3:
 			print 'jog increment angular'
 			self.w.stackedWidget_7.setCurrentIndex(3)
@@ -1509,85 +1527,85 @@ class HandlerClass:
 			distance = STATUS.get_jog_increment_angular()
 			if direction == -1:
 				velocity = velocity * -1
-			self.cmnd.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,velocity,distance)
+			self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,velocity,distance)
 
 #		stop button display during jog position mode - those not used yet commented out
 	def pb_f12s7_1_jog_positioning_pressed(self):
 			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(4)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(5)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(6)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(7)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(8)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 #		stop button display during jog linear mode  - those not used yet commented out
 	def pb_f12s7_2_jog_lin_stop_all_pressed(self):
 			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 #			jointflag,axisjoint= STATUS.get_jog_info(6)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 #			jointflag,axisjoint= STATUS.get_jog_info(7)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 #			jointflag,axisjoint= STATUS.get_jog_info(8)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_2_jog_lin_stop_x_pressed(self):
 			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_2_jog_lin_stop_y_pressed(self):
 			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_2_jog_lin_stop_z_pressed(self):
 			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_2_jog_lin_stop_u_pressed(self):
 			print 'jog_lin_stop_u is disabled'
 #			jointflag,axisjoint= STATUS.get_jog_info(6)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_2_jog_lin_stop_v_pressed(self):
 			print 'jog_lin_stop_v is disabled'
 #			jointflag,axisjoint= STATUS.get_jog_info(7)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_2_jog_lin_stop_w_pressed(self):
 			print 'jog_lin_stop_w is disabled'
 #			jointflag,axisjoint= STATUS.get_jog_info(8)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 #		stop button display during jog angular mode - those not used yet commented out
 	def pb_f12s7_3_jog_ang_stop_all_pressed(self):
 			print 'jog_ang_stop_all is disabled'
 #			jointflag,axisjoint= STATUS.get_jog_info(3)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 #			jointflag,axisjoint= STATUS.get_jog_info(4)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 #			jointflag,axisjoint= STATUS.get_jog_info(5)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_3_jog_ang_stop_a_pressed(self):
 			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_3_jog_ang_stop_b_pressed(self):
 			print 'jog_ang_stop_b is disabled'
 #			jointflag,axisjoint= STATUS.get_jog_info(4)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 	def pb_f12s7_3_jog_ang_stop_c_pressed(self):
 			print 'jog_ang_stop_c is disabled'
 #			jointflag,axisjoint= STATUS.get_jog_info(5)
-#			self.cmnd.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
 
 #		jogging position mode - position jog mode is only for use
 #		with preset commands read from .ini file
@@ -1790,45 +1808,27 @@ class HandlerClass:
 
 #		jogging position preset commands - the commands have to be listed in the ini file
 	def pb_f12s6_1_jog_position_0_pressed(self):
-		print '>>>>> pb_f12s6_1_jog_position_0_pressed'
-		print '>>>>> SENDING CMD - self.cmnd.mode(linuxcnc.MODE_MDI)'
-		self.cmnd.mode(linuxcnc.MODE_MDI)
-		print '>>>>> SENDING CMD - self.cmnd.wait_complete()'
-		self.cmnd.wait_complete()
-		print '>>>>> SENDING CMD - self.cmnd.mdi(G01X0Y0Z0A0F2)'
-		self.cmnd.mdi('G01X0Y0Z0A0F2')
-		print '>>>>> SENDING CMD - self.cmnd.wait_complete()'
-		self.cmnd.wait_complete()
-		print '>>>>> SENDING CMD - self.cmnd.mode(linuxcnc.MODE_MANUAL)'
-		self.cmnd.mode(linuxcnc.MODE_MANUAL)
-		print '>>>>> SENDING CMD - self.cmnd.wait_complete()'
-		self.cmnd.wait_complete()
-
-#		self.cmnd.mdi(str(self.jogging_position_cmds[0][1]))
-
-
-
+		self.position_cmds(btn=0)
 	def pb_f12s6_1_jog_position_1_pressed(self):
-		cmd = self.jogging_position_cmds[1][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=1)
 	def pb_f12s6_1_jog_position_2_pressed(self):
-		cmd = self.jogging_position_cmds[2][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=2)
 	def pb_f12s6_1_jog_position_3_pressed(self):
-		cmd = self.jogging_position_cmds[3][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=3)
 	def pb_f12s6_1_jog_position_4_pressed(self):
-		cmd = self.jogging_position_cmds[4][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=4)
 	def pb_f12s6_1_jog_position_5_pressed(self):
-		cmd = self.jogging_position_cmds[5][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=5)
 	def pb_f12s6_1_jog_position_6_pressed(self):
-		cmd = self.jogging_position_cmds[6][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=6)
 	def pb_f12s6_1_jog_position_7_pressed(self):
-		cmd = self.jogging_position_cmds[7][1]
-		print 'position jog cmd:' ,cmd
+		self.position_cmds(btn=7)
+
+	def position_cmds(self,btn):
+		self.c.mode(linuxcnc.MODE_MDI)
+		self.c.wait_complete()
+		self.c.mdi(str(self.jogging_position_cmds[btn][1]))
+		self.jogging_control[14] = 1 # position mdi mode move in progress
 
 #		linear jogging buttons - these handle the increments as listed in the ini file
 	def pb_f12s6_0_jog_linear_0_pressed(self):
@@ -2026,7 +2026,7 @@ class HandlerClass:
 		# set spindle 0 speed
 	def scrb_f9_spindle_0_setValue(self,value):
 		spin_0_rps = float(value)/10000
-		self.cmnd.spindleoverride(spin_0_rps)
+		self.c.spindleoverride(spin_0_rps)
 		self.w.lab_f9_spindle_0_rpm.setText(str(self.w.scrb_f9_spindle_0.value()/100))
 
 	def pb_f9_spindle_0_forward_toggle(self):
@@ -2060,7 +2060,7 @@ class HandlerClass:
 # F9	sw3_1
 #		Hal Xembed: command-string 'matchbox-keyboard --xid' - location and size 0x0x954x228
 
-# F10	Gcode graphics display panel
+# F10_0	Gcode graphics display panel
 	def pb_f10sw3_0_graph_spare_toggle(self):
 		print 'graph_spare_2'
 	def pb_f10sw3_0_graph_dro_toggle(self):
@@ -2071,8 +2071,6 @@ class HandlerClass:
 	def pb_f10sw3_0_zoom_in_pressed(self):
 		print 'graph_zoom in'
 #		self.w.GRAPHICS_NAME.zoom_in()
-
-
 	def pb_f10sw3_0_graph_x_toggle(self):
 		STATUS.emit('view-changed', '%s' % 'x')
 	def pb_f10sw3_0_graph_y_toggle(self):
@@ -2085,6 +2083,33 @@ class HandlerClass:
 		STATUS.emit('view-changed', '%s' % 'p')
 	def pb_f10sw3_0_graph_clear_clicked(self):
 		STATUS.emit('view-changed', '%s' % 'clear')
+
+# F10_1	Homing panel
+	def pb_f10sw3_1_home_xyz_toggle(self):
+		self.machine_control[3] = 1
+
+	def pb_f10sw3_1_home_x_toggle(self):
+		self.c.home(0)
+		self.c.wait_complete()
+
+	def pb_f10sw3_1_home_y_toggle(self):
+		self.c.home(1)
+		self.c.wait_complete()
+
+	def pb_f10sw3_1_home_z_toggle(self):
+		self.c.home(2)
+		self.c.wait_complete()
+
+	def pb_f10sw3_1_home_a_toggle(self):
+		self.c.home(3)
+		self.c.wait_complete()
+
+	def pb_f10sw3_1_home_spare_toggle(self):
+		data = range(9)
+		data[0:] = [','] * 9
+		data = self.s.homed
+		print 'data:',data
+		print data[2]
 
 # F11   status panel
 	def lab_f11s4_0_mcode_list_setText(self):
@@ -2108,8 +2133,8 @@ class HandlerClass:
 
 # F12   auto mode gcode
 	def pb_f12s5_2_gcode_load_pressed(self):
-		if self.stat.task_mode == 2:
-			file_name = str(self.stat.file)
+		if self.s.task_mode == 2:
+			file_name = str(self.s.file)
 			enable = '.ngc' in file_name
 			self.auto_no_file(enable)
 		# doing this for now
@@ -2117,7 +2142,7 @@ class HandlerClass:
 
 #		flt = INFO.get_filter_program(str(fname))
 #		if not flt:
-#			self.cmnd.program_open(str(fname))
+#			self.c.program_open(str(fname))
 #		else:
 #			self.open_filter_program(str(fname), flt)
 #		STATUS.emit('reload-display')
@@ -2125,54 +2150,54 @@ class HandlerClass:
 		# run gcode
 	def pb_f12s5_2_gcode_run_pressed(self):
 		self.ensure_mode(linuxcnc.MODE_AUTO)
-		self.cmnd.auto(linuxcnc.AUTO_RUN,0)
+		self.c.auto(linuxcnc.AUTO_RUN,0)
 
 	def pb_f12s5_2_gcode_step_toggle(self):
-#		if self.stat.task_mode != linuxcnc.MODE_AUTO or self.stat.interp_state != linuxcnc.INTERP_IDLE:
+#		if self.s.task_mode != linuxcnc.MODE_AUTO or self.s.interp_state != linuxcnc.INTERP_IDLE:
 #			return
 		self.ensure_mode(linuxcnc.MODE_AUTO)
-		self.cmnd.auto(linuxcnc.AUTO_STEP)
+		self.c.auto(linuxcnc.AUTO_STEP)
 
 		# pause
 	def pb_f12s5_2_gcode_pause_toggle(self,pressed):
-#		if self.stat.task_mode != linuxcnc.MODE_AUTO or self.stat.interp_state not in (linuxcnc.INTERP_READING, linuxcnc.INTERP_WAITING):
+#		if self.s.task_mode != linuxcnc.MODE_AUTO or self.s.interp_state not in (linuxcnc.INTERP_READING, linuxcnc.INTERP_WAITING):
 #			return
 		if pressed:
-			self.cmnd.auto(linuxcnc.AUTO_PAUSE)
+			self.c.auto(linuxcnc.AUTO_PAUSE)
 		else:
-			self.cmnd.auto(linuxcnc.AUTO_RESUME)
+			self.c.auto(linuxcnc.AUTO_RESUME)
 
 #		self.ensure_mode(linuxcnc.MODE_AUTO)
-#		if not self.stat.paused:
+#		if not self.s.paused:
 #			print 'Line 2230 we are paused'
-#			self.cmnd.auto(linuxcnc.AUTO_RESUME)
+#			self.c.auto(linuxcnc.AUTO_RESUME)
 #		else:
 #			print 'Line 2233 we are not paused'
-#			self.cmnd.auto(linuxcnc.AUTO_PAUSE)
+#			self.c.auto(linuxcnc.AUTO_PAUSE)
 
 		# abort
 	def pb_f12s5_2_gcode_abort_toggle(self):
-		self.cmnd.abort()
+		self.c.abort()
 
 		# run from a specific line
 	def pb_f12s5_2_gcode_run_from_pressed(self):
-		self.cmnd.auto(linuxcnc.AUTO_RUN,0)
+		self.c.auto(linuxcnc.AUTO_RUN,0)
 
 	def pb_f12s5_2_gcode_optn_stop_toggle(self,pressed):
 		if pressed:
-			self.cmnd.set_optional_stop(True)
+			self.c.set_optional_stop(True)
 		else:
-			self.cmnd.set_optional_stop(False)
+			self.c.set_optional_stop(False)
 
 	def pb_f12s5_2_gcode_block_del_toggle(self,pressed):
 		if pressed:
-			self.cmnd.set_block_delete(True)
+			self.c.set_block_delete(True)
 		else:
-			self.cmnd.set_block_delete(False)
+			self.c.set_block_delete(False)
 
 	def pb_f12s5_2_gcode_unload_toggle(self):
 		# load do nothing program
-		self.cmnd.program_open('/home/cnc/qtvcp-dev/configs/x1Mill/unload.ngc')
+		self.c.program_open('/home/cnc/qtvcp-dev/configs/x1Mill/unload.ngc')
 
 	def lab_f12s5_2_gcode_motion_line_setText(self):
 		name = self.w.sender().text()
@@ -2276,3 +2301,4 @@ def get_handlers(halcomp,widgets,paths):
 
 
 #END
+
