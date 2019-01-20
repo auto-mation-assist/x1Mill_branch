@@ -26,54 +26,59 @@
 # You should print out the below info - Do not delete it
 
 
-# >>>> indents are: Tab 4 <<<< #
+# >>>> indents are: Tab 3 <<<< #
 # ============================ #
 
 # machine related variables - values are -1 untill updated
 # -------------------------------------------------------------------------
-# machine_control[0] machine units: 0 = inch, 1 = metric - from ini file and verified
-# machine_control[1] angular units: deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
-# machine_control[2] units convert: 0 = convert to inch, 1 = convert to metric
-# machine_control[3] homing all selected: 0 = False 1 = True
+# self.machine_info[0] machine units: 1 = inch, 2 = metric - from ini file and verified
+# self.machine_info[1] angular units: deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
+# self.machine_info[2] units convert: 0 = no conversion 1 = to inch, 2 = to metric
+# self.machine_info[3] homing all selected: 0 = False 1 = True
+# self.machine_info[4] jogging in progress: 0 = no 1 = Yes
 
 # Jogging control info - values are -1 at start up or have not been updated
 # -------------------------------------------------------------------------
-# jogging_control[0]	=  0 = jogging disabled  1 = position mode  2 = linear mode 3=angular mode
-# jogging_control[1]	=  0 = jog slow  1 = jog fast
-# jogging_control[2]	=  position slow rate value
-# jogging_control[3]	=  position fast rate value
-# jogging_control[4]	=  linear slow rate value
-# jogging_control[5]	=  linear fast rate value
-# jogging_control[6]	=  angular slow rate value
-# jogging_control[7]	=  angular fast rate value
-# jogging_control[8]	=  0 = continuous mode  1 = Increment mode
-# jogging_control[9]	=  linear increment value  (float)
-# jogging_control[10]	=  current linear increment index
-# jogging_control[12]	=  angular increment value (float)
-# jogging_control[13]	=  current angular increment index
-# jogging_control[14]	=  -1 = no position mdi move 1 = mdi move in progress
+# self.jog_control[0] =  jogging enabled: 1 = enabled
+# self.jog_control[1] =  jogging mode: 1 = position  2 = linear 3 = angular
+# self.jog_control[2] =  jogging type: 1 = continous  2 = incremental
+# self.jog_control[3] =  jog rate: 1 = jog slow  2 = jog fast
+# self.jog_control[4] =  axis-joint number:  0,1,2,3,4,5,6,7,8
+# self.jog_control[5] =  direction: 1 = pos, -1 = neg
+# self.jog_control[6] =	increment list in use: 1 = inch, 2 = metric - from ini file and verified
+# self.jog_control[7] =  current inch increment index: 0 to 19
+# self.jog_control[8] =  curent metric increment index: 0 to 19
+# self.jog_control[9] =  current angular increment index: 0 to 19
+# self.jog_control[10] = mdi position cmd: 1 = send cmd, -1 = no action or cmd completed
 
-# inch jogging increments
-# -------------------------------------------------------------------------
-# inch_incrs[0]			= -1 not used yet, 0 = not in use, 1 = in use
-# inch_incrs[1]			= 0 is inch value referance designation
-# inch_incrs[2]			= in use increment value
-# inch_incrs[3:23]		= inch jogging increment data - this
-#
-# inch metric jogging increments
-# -------------------------------------------------------------------------
-# metric_incrs[0]		= -1 not used yet, 0 = not in use, 1 = in use
-# metric_incrs[1]		= 1 is mm value referance designation
-# metric_incrs[2]		= in use increment value
-# metric_incrs[3:23]	= metric jogging increment data
+# self.jog_rates[0]	=  inch increment value
+# self.jog_rates[1]	=  metric increment value
+# self.jog_rates[2]	=  angular increment value
+# self.jog_rates[3]	=  position slow rate value
+# self.jog_rates[4]	=  position fast rate value
+# self.jog_rates[5]	=  linear slow rate value
+# self.jog_rates[6]	=  linear fast rate value
+# self.jog_rates[7]	=  angular slow rate value
+# self.jog_rates[8]	=  angular fast rate value
 
-# angular jogging increments
-# -------------------------------------------------------------------------
-# angular_incrs[0]		= -1 not used yet, 0 = not in use, 1 = in use
-# angular_incrs[1]		= -1 ( will be name of angular type in future)
-# angular_incrs[2]		= angular units type 0,1,2,3,4,5 (decoded by: self.machine_control)
-# angular_incrs[3:23]	= angular jogging increment data
 
+# inch jogging increment list
+# -------------------------------------------------------------------------
+# self.inch_increments[0:19]	= inch jogging increment data
+# self.inch_increments[20]		= default inch increment
+# >>>>> self.inch_incr_list
+
+# inch metric jogging increment list
+# -------------------------------------------------------------------------
+# self.metric_increments[0:19]	= metric jogging increment data
+# self.metric_increments[20]	= default metric increment
+# >>>>> self.metric_incr_list
+
+# angular jogging increment list
+# -------------------------------------------------------------------------
+# self.angular_increments[0:19]	= angular jogging increment data
+# self.angular_increments[20]	= default angular increment
+# >>>> self.angular_incr_list
 # -------------------------------------------------------------------------
 import gtk
 from PyQt5 import QtCore
@@ -115,38 +120,38 @@ DEBUG = 0
 # 	  for reading my own perferences file
 cp1 = ConfigParser.RawConfigParser
 class x1m_preferences(cp1):
-    types = {
-        bool: cp1.getboolean,
-        float: cp1.getfloat,
-        int: cp1.getint,
-        str: cp1.get,
-        repr: lambda self, section, option: eval(cp1.get(self, section, option)),
-    }
+	types = {
+	   bool: cp1.getboolean,
+	    float: cp1.getfloat,
+	     int: cp1.getint,
+	     str: cp1.get,
+	     repr: lambda self, section, option: eval(cp1.get(self, section, option)),
+	}
 
-    def __init__(self, path = None):
-        cp1.__init__(self)
-        if not path:
-            path = '~/.toolch_preferences'  # <<<=====  Will need to change this
-        self.fn = os.path.expanduser(path)
-        self.read(self.fn)
+	def __init__(self, path = None):
+		cp1.__init__(self)
+		if not path:
+			path = '~/.toolch_preferences'  # <<<=====  Will need to change this
+		self.fn = os.path.expanduser(path)
+		self.read(self.fn)
 
-    def getpref(self, option, default = False, type = bool):
-        m = self.types.get(type)
-        try:
-            o = m(self, 'DEFAULT', option)
-        except Exception, detail:
-            print detail
-            self.set('DEFAULT', option, default)
-            self.write(open(self.fn, 'w'))
-            if type in(bool, float, int):
-                o = type(default)
-            else:
-                o = default
-        return o
+	def getpref(self, option, default = False, type = bool):
+		m = self.types.get(type)
+		try:
+			o = m(self, 'DEFAULT', option)
+		except Exception, detail:
+			print detail
+			self.set('DEFAULT', option, default)
+			self.write(open(self.fn, 'w'))
+			if type in(bool, float, int):
+				o = type(default)
+			else:
+				o = default
+		return o
 
-    def putpref(self, option, value, type = bool):
-        self.set('DEFAULT', option, type(value))
-        self.write(open(self.fn, 'w'))
+	def putpref(self, option, value, type = bool):
+		self.set('DEFAULT', option, type(value))
+		self.write(open(self.fn, 'w'))
 
 # -------------------------------------------------------------------------
 class HandlerClass:
@@ -165,10 +170,32 @@ class HandlerClass:
 		self.e = linuxcnc.error_channel()
 		self.s.poll()
 		self.e.poll()
+		self.init_control_lists()
 
 	def error_poll(self):
 		error = self.e.poll()
 		return 0
+
+	def init_control_lists(self):
+		self.machine_info = range(5)					# machine configuration info
+		self.machine_info[0:] = [-1] * 5
+		self.jog_control = range(11)				# jogging master control
+		self.jog_control[0:] = [0] * 11
+		self.jog_rates = range(9)						# jogging rate values
+		self.jog_rates[0:] = [0] * 9
+		self.inch_increments = range(21)				# jogging increments master
+		self.inch_increments[0:] = [0] * 21
+		self.metric_increments = range(21)				# jogging increments master
+		self.metric_increments[0:] = [0] * 21
+		self.active_linear_increments = range(20)		# in use jogging increments
+		self.active_linear_increments[0:] = [-1] * 20
+		self.angular_increments = range(21)				# jogging increments
+		self.angular_increments[0:] = [0] * 21
+		self.jog_linear_buttons	= range(21)				# jogging buttons and cmds
+		self.jog_linear_buttons[0:]	= [-1] * 21
+		self.jog_angular_buttons = range(21)			# jogging buttons and cmds
+		self.jog_angular_buttons[0:] = [-1] * 21
+
 
 # 		make paths to my very own files
 	def initialized__(self):
@@ -184,18 +211,19 @@ class HandlerClass:
 		print 'Using our own preference file:', self.pref_path
 		self.prefs = x1m_preferences(self.pref_path)
 
- 		self.make_spindle_pins() # making our own hal pins - halcomp0
-		self.get_general_info()
+		self.get_machine_info()
+		self.make_spindle_pins() # making our own hal pins - halcomp0
+		self.setup_jogging()
 		self.startup_disables()
-		self.startup_hide()
+#		self.startup_hide()
 #		self.get_probing_values()  # from ini file
 #		self.get_tool_sensor_data()
-		self.setup_jogging()
-		self.build_jogging_increments()
+		self.slider_range_values()
+		self.build_jog_increments()
 		self.get_jogging_position_cmds()
 		self.get_macro_file_locations()
-		self.label_linear_jogging_buttons()
-		self.label_angular_jogging_buttons()
+		self.label_linear_jog_btns()
+		self.label_angular_jog_btns()
 		self.get_spindle_0_settings()
 		self.get_spindle_1_settings()
 		self.spindle_0(enable=False)
@@ -218,55 +246,52 @@ class HandlerClass:
 #		self.halcomp2 ect. Or this one can be renamed and added to
 #		for other required pins that may not be generated automatically
 
-# 		jogging buttons and cmd lists
+
 	def	setup_jogging(self):
-		self.jogging_control = range(15)			# controls all jogging functions
-		self.jogging_control[0:] = [-1] * 15
-		self.jog_linear_buttons	= range(21)			# linear match value cmd list
-		self.jog_linear_buttons[0:]	= [-1] * 21
-		self.jog_angular_buttons = range(21)		# angular match value cmd list
-		self.jog_angular_buttons[0:] = [-1] * 21
-		local_btn_cmds=range(20)					# linear and angular cmd lists used to set buttons to true
+		local_btn_cmds=range(20) # cmd list for setting a button to true by index number
 		for index, obj in enumerate(local_btn_cmds):
-				self.jog_linear_buttons[index]  = 'self.w.pb_f12s6_0_jog_linear_'+(str(index)+'.setChecked(True)')
-				self.jog_angular_buttons[index] = 'self.w.pb_f12s6_2_jog_angular_'+(str(index)+'.setChecked(True)')
+			self.jog_linear_buttons[index]  = 'self.w.pb_f12s6_0_jog_linear_'+(str(index)+'.setChecked(True)')
+			self.jog_angular_buttons[index] = 'self.w.pb_f12s6_2_jog_angular_'+(str(index)+'.setChecked(True)')
 
 
-	def get_general_info(self):
-		self.machine_control = range(4)
-		self.machine_control[0:] = [-1] * 4
+	def get_machine_info(self):
+		# machine units: 0 = unkown, 1 = inch, 2 = metric
 		mach_units_linear = self.inifile.find('TRAJ', 'LINEAR_UNITS')
 		mach_units_angular = self.inifile.find('TRAJ', 'ANGULAR_UNITS')
 		if mach_units_linear in ['in', 'inch', 'imperial']:
-			self.machine_control[0] = 0  # machine units are in inches
+			self.machine_info[0] = 1  # machine units are in inches
+			self.jog_control[6] = 1 # jogging flag set to inch
+			self.w.plab_f12s5_0_jog_incr_label.setText('INCH INCR')
 		if mach_units_linear in ['mm', 'metric']:
-			self.machine_control[0] = 1  # machine units are in mm
-		self.machine_control[1]=['deg','degree','rad','radian','grad','gon'].index(mach_units_angular)
+			self.machine_info[0] = 2    # machine units are in mm
+			self.jog_control[6] = 2 # jogging flag set to metric
+			self.w.plab_f12s5_0_jog_incr_label.setText('MM INCR')
+		self.machine_info[1]=['deg','degree','rad','radian','grad','gon'].index(mach_units_angular)
+		# machine units: 0 = unkown, 1 = inch, 2 = metric
 		# angular units: deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
+		print 'line 281: ', self.jog_control
 
-#		machine_control[0] machine units: 0 = inch, 1 = metric
-#		machine_control[1] angular units: deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
 
 #		disable these buttons on start up or estop
 	def startup_disables(self):
 		self.w.pb_f0_estop.setChecked(True)
 		self.w.pb_f1_power.setChecked(False)
 		startup_data = ['pb_f1_power','pb_f1_manual','pb_f1_mdi','pb_f1_auto','pb_f1_enable_motors',
-						'pb_f1_spare','pb_f2_keyboard','pb_f2_spare','pb_f3_graphic',
-						'pb_f3_homing','pb_f3_tool','pb_f3_probe','pb_f3_tool_offsets',
-						'pb_f3_origin_offsets','pb_f3_macro','pb_f3_edit_gcode',
-						'pb_f3_camview','pb_f3_file','pb_f4_flood','pb_f4_mist','pb_f4_aux',
-						'pb_f12s5_0_jog_position','pb_f12s5_0_jog_linear','pb_f12s5_0_jog_angular',
-						'pb_f12s5_0_jog_rate_slow','pb_f12s5_0_jog_mode','pb_f12s5_0_jog_rate_fast',
-						'pb_f12s5_0_jog_pos_x','pb_f12s5_0_jog_neg_x','pb_f12s5_0_jog_pos_y',
-						'pb_f12s5_0_jog_neg_y','pb_f12s5_0_jog_pos_z','pb_f12s5_0_jog_neg_z',
-						'pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a','pb_f5_spindle_1',
-						'pb_f5_quick_zero','pb_f5_macro','pb_f5_overrides','pb_f5_dro',
-						'pb_f7_dro_abs','pb_f7_dro_dtg','pb_f7_dro_rel','pb_f7_dro_units',
-						'pb_f7_dro_spare','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
-						'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_spare','pb_f10sw3_0_graph_x',
-						'pb_f10sw3_0_graph_y','pb_f10sw3_0_graph_z','pb_f10sw3_0_graph_z2',
-						'pb_f10sw3_0_graph_p','pb_f10sw3_0_graph_clear']
+		                'pb_f1_keyboard','pb_f3_graphic',
+		                'pb_f3_homing','pb_f3_tool','pb_f3_probe','pb_f3_tool_offsets',
+		            'pb_f3_origin_offsets','pb_f3_macro','pb_f3_edit_gcode',
+		            'pb_f3_camview','pb_f3_file','pb_f4_flood','pb_f4_mist','pb_f4_aux',
+		            'pb_f12s5_0_jog_position','pb_f12s5_0_jog_linear','pb_f12s5_0_jog_angular',
+		            'pb_f12s5_0_jog_rate_slow','pb_f12s5_0_jog_continous','pb_f12s5_0_jog_increment','pb_f12s5_0_jog_rate_fast',
+		            'pb_f12s5_0_jog_pos_x','pb_f12s5_0_jog_neg_x','pb_f12s5_0_jog_pos_y',
+		            'pb_f12s5_0_jog_neg_y','pb_f12s5_0_jog_pos_z','pb_f12s5_0_jog_neg_z',
+		            'pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a','pb_f5_spindle_1',
+		            'pb_f5_quick_zero','pb_f5_macro','pb_f5_overrides','pb_f5_dro',
+		            'pb_f7_dro_abs','pb_f7_dro_dtg','pb_f7_dro_rel','pb_f7_dro_units',
+		            'pb_f7_dro_spare','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
+		            'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_spare','pb_f10sw3_0_graph_x',
+		            'pb_f10sw3_0_graph_y','pb_f10sw3_0_graph_z','pb_f10sw3_0_graph_z2',
+		            'pb_f10sw3_0_graph_p','pb_f10sw3_0_graph_clear']
 		for num, btn in enumerate(startup_data, start=0):
 			btn = 'self.w.' + (str(startup_data[num])) + '.setEnabled(False)'
 			exec btn
@@ -279,15 +304,14 @@ class HandlerClass:
 		self.w.stackedWidget_4.setCurrentIndex(0) # fr11   index 0,1
 		self.w.stackedWidget_5.setCurrentIndex(0) # fr12   index 0,1,2,3,4
 		self.w.stackedWidget_6.setCurrentIndex(0) # fr12s6 index 0,1,2,3,4
-		self.w.stackedWidget_7.setCurrentIndex(0) # fr12s7 index 0,1,2
 
 #		enable buttons on power up
 	def power_on_off(self,enable):
 		# set these buttons to true at start up
 		data_true = ['pb_f1_manual','pb_f3_graphic','pb_f5_spindle_1',
-				'pb_f7_dro_abs','pb_f10sw3_0_graph_p','pb_f12s5_0_jog_linear',
-				'pb_f12s5_0_jog_rate_slow']
-		data_false = ['pb_f2_keyboard','pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a']
+		             'pb_f7_dro_abs','pb_f10sw3_0_graph_p','pb_f12s5_0_jog_linear',
+		             'pb_f12s5_0_jog_rate_slow','pb_f12s5_0_jog_continous']
+		data_false = ['pb_f1_keyboard','pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a']
 		for num, btn in enumerate(data_true, start=0):
 			btn = 'self.w.' + (str(data_true[num])) + '.setChecked(True)'
 			exec btn
@@ -297,21 +321,21 @@ class HandlerClass:
 
 #		enable these buttons based on power on or off
 		data = ['pb_f1_manual','pb_f1_mdi','pb_f1_auto','pb_f1_enable_motors',
-				'pb_f1_spare','pb_f2_keyboard','pb_f2_spare','pb_f3_graphic',
-				'pb_f3_homing','pb_f3_tool','pb_f3_probe','pb_f3_tool_offsets',
-				'pb_f3_origin_offsets','pb_f3_macro','pb_f3_edit_gcode',
-				'pb_f3_camview','pb_f3_file','pb_f4_flood','pb_f4_mist','pb_f4_aux',
-				'pb_f12s5_0_jog_position','pb_f12s5_0_jog_linear','pb_f12s5_0_jog_angular',
-				'pb_f12s5_0_jog_rate_slow','pb_f12s5_0_jog_mode','pb_f12s5_0_jog_rate_fast',
-				'pb_f12s5_0_jog_pos_x','pb_f12s5_0_jog_neg_x','pb_f12s5_0_jog_pos_y',
-				'pb_f12s5_0_jog_neg_y','pb_f12s5_0_jog_pos_z','pb_f12s5_0_jog_neg_z',
-				'pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a','pb_f5_spindle_1',
-				'pb_f5_quick_zero','pb_f5_macro','pb_f5_overrides','pb_f5_dro',
-				'pb_f7_dro_abs','pb_f7_dro_dtg','pb_f7_dro_rel','pb_f7_dro_units',
-				'pb_f7_dro_spare','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
-				'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_spare','pb_f10sw3_0_graph_x',
-				'pb_f10sw3_0_graph_y','pb_f10sw3_0_graph_z','pb_f10sw3_0_graph_z2',
-				'pb_f10sw3_0_graph_p','pb_f10sw3_0_graph_clear']
+		        'pb_f1_keyboard','pb_f3_graphic',
+		        'pb_f3_homing','pb_f3_tool','pb_f3_probe','pb_f3_tool_offsets',
+		      'pb_f3_origin_offsets','pb_f3_macro','pb_f3_edit_gcode',
+		      'pb_f3_camview','pb_f3_file','pb_f4_flood','pb_f4_mist','pb_f4_aux',
+		      'pb_f12s5_0_jog_position','pb_f12s5_0_jog_linear','pb_f12s5_0_jog_angular',
+		      'pb_f12s5_0_jog_rate_slow','pb_f12s5_0_jog_continous','pb_f12s5_0_jog_increment','pb_f12s5_0_jog_rate_fast',
+		      'pb_f12s5_0_jog_pos_x','pb_f12s5_0_jog_neg_x','pb_f12s5_0_jog_pos_y',
+		      'pb_f12s5_0_jog_neg_y','pb_f12s5_0_jog_pos_z','pb_f12s5_0_jog_neg_z',
+		      'pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a','pb_f5_spindle_1',
+		      'pb_f5_quick_zero','pb_f5_macro','pb_f5_overrides','pb_f5_dro',
+		      'pb_f7_dro_abs','pb_f7_dro_dtg','pb_f7_dro_rel','pb_f7_dro_units',
+		      'pb_f7_dro_spare','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
+		      'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_spare','pb_f10sw3_0_graph_x',
+		      'pb_f10sw3_0_graph_y','pb_f10sw3_0_graph_z','pb_f10sw3_0_graph_z2',
+		      'pb_f10sw3_0_graph_p','pb_f10sw3_0_graph_clear']
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
@@ -321,20 +345,20 @@ class HandlerClass:
 			self.c.state(linuxcnc.STATE_OFF)
 
 #		startup hide these buttons until each is called
-	def startup_hide(self):
-		data = ['pb_f12s7_2_jog_lin_stop_all','pb_f12s7_2_jog_lin_stop_x','pb_f12s7_2_jog_lin_stop_y',
-						'pb_f12s7_2_jog_lin_stop_z','pb_f12s7_2_jog_lin_stop_u','pb_f12s7_2_jog_lin_stop_v',
-						'pb_f12s7_2_jog_lin_stop_w','pb_f12s7_3_jog_ang_stop_all','pb_f12s7_3_jog_ang_stop_a',
-						'pb_f12s7_3_jog_ang_stop_b','pb_f12s7_3_jog_ang_stop_c',]
-		for num, btn in enumerate(data, start=0):
-			btn = 'self.w.' + (str(data[num])) + '.hide()'
-			exec btn
+#	def startup_hide(self):
+#		data = ['pb_f12s7_2_jog_lin_stop_all','pb_f12s7_2_jog_lin_stop_x','pb_f12s7_2_jog_lin_stop_y',
+#						'pb_f12s7_2_jog_lin_stop_z','pb_f12s7_2_jog_lin_stop_u','pb_f12s7_2_jog_lin_stop_v',
+#						'pb_f12s7_2_jog_lin_stop_w','pb_f12s7_3_jog_ang_stop_all','pb_f12s7_3_jog_ang_stop_a',
+#						'pb_f12s7_3_jog_ang_stop_b','pb_f12s7_3_jog_ang_stop_c',]
+#		for num, btn in enumerate(data, start=0):
+#			btn = 'self.w.' + (str(data[num])) + '.hide()'
+#			exec btn
 
 #		spindle 0 btns enable or disable
 	def spindle_0(self,enable):
 		data = ['pb_f9_spindle_0_quick_set_0','pb_f9_spindle_0_quick_set_1','pb_f9_spindle_0_quick_set_2',
-				'pb_f9_spindle_0_quick_set_3','scrb_f9_spindle_0','pb_f9_spindle_0_reverse',
-				'pb_f9_spindle_0_stop','pb_f9_spindle_0_forward']
+		        'pb_f9_spindle_0_quick_set_3','scrb_f9_spindle_0','pb_f9_spindle_0_reverse',
+		        'pb_f9_spindle_0_stop','pb_f9_spindle_0_forward']
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
@@ -342,8 +366,8 @@ class HandlerClass:
 #		spindle 1 btns enable or disable
 	def spindle_1(self,enable):
 		data = ['pb_f6s2_0_spindle_1_enable','pb_f6s2_0_spindle_1_quick_set_0','pb_f6s2_0_spindle_1_quick_set_1',
-				'pb_f6s2_0_spindle_1_quick_set_2','pb_f6s2_0_spindle_1_quick_set_3','scrb_f6s2_0_spindle_1_rpm',
-				'pb_f6s2_0_spindle_1_reverse','pb_f6s2_0_spindle_1_stop','pb_f6s2_0_spindle_1_forward']
+		        'pb_f6s2_0_spindle_1_quick_set_2','pb_f6s2_0_spindle_1_quick_set_3','scrb_f6s2_0_spindle_1_rpm',
+		        'pb_f6s2_0_spindle_1_reverse','pb_f6s2_0_spindle_1_stop','pb_f6s2_0_spindle_1_forward']
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
@@ -351,8 +375,8 @@ class HandlerClass:
 #		jogging position btns enable or disable
 	def position_jog_btns(self,enable):
 		data = ['pb_f12s6_1_jog_position_0','pb_f12s6_1_jog_position_1','pb_f12s6_1_jog_position_2',
-				'pb_f12s6_1_jog_position_3','pb_f12s6_1_jog_position_4','pb_f12s6_1_jog_position_5',
-				'pb_f12s6_1_jog_position_6','pb_f12s6_1_jog_position_7']
+		        'pb_f12s6_1_jog_position_3','pb_f12s6_1_jog_position_4','pb_f12s6_1_jog_position_5',
+		        'pb_f12s6_1_jog_position_6','pb_f12s6_1_jog_position_7']
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
@@ -360,12 +384,12 @@ class HandlerClass:
 #		jogging linear btns enable or disable
 	def linear_jog_btns(self,enable):
 		data = ['pb_f12s6_0_jog_linear_0','pb_f12s6_0_jog_linear_1','pb_f12s6_0_jog_linear_2',
-				'pb_f12s6_0_jog_linear_3','pb_f12s6_0_jog_linear_4','pb_f12s6_0_jog_linear_5',
-				'pb_f12s6_0_jog_linear_6','pb_f12s6_0_jog_linear_7','pb_f12s6_0_jog_linear_8',
-				'pb_f12s6_0_jog_linear_9','pb_f12s6_0_jog_linear_10','pb_f12s6_0_jog_linear_11',
-				'pb_f12s6_0_jog_linear_12','pb_f12s6_0_jog_linear_13','pb_f12s6_0_jog_linear_14',
-				'pb_f12s6_0_jog_linear_15','pb_f12s6_0_jog_linear_16','pb_f12s6_0_jog_linear_17',
-				'pb_f12s6_0_jog_linear_18','pb_f12s6_0_jog_linear_19']
+		        'pb_f12s6_0_jog_linear_3','pb_f12s6_0_jog_linear_4','pb_f12s6_0_jog_linear_5',
+		        'pb_f12s6_0_jog_linear_6','pb_f12s6_0_jog_linear_7','pb_f12s6_0_jog_linear_8',
+		      'pb_f12s6_0_jog_linear_9','pb_f12s6_0_jog_linear_10','pb_f12s6_0_jog_linear_11',
+		      'pb_f12s6_0_jog_linear_12','pb_f12s6_0_jog_linear_13','pb_f12s6_0_jog_linear_14',
+		      'pb_f12s6_0_jog_linear_15','pb_f12s6_0_jog_linear_16','pb_f12s6_0_jog_linear_17',
+		      'pb_f12s6_0_jog_linear_18','pb_f12s6_0_jog_linear_19']
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
@@ -373,12 +397,12 @@ class HandlerClass:
 #		jogging angular btns enable or disable
 	def angular_jog_btns(self,enable):
 		data = ['pb_f12s6_2_jog_angular_0','pb_f12s6_2_jog_angular_1','pb_f12s6_2_jog_angular_2',
-				'pb_f12s6_2_jog_angular_3','pb_f12s6_2_jog_angular_4','pb_f12s6_2_jog_angular_5',
-				'pb_f12s6_2_jog_angular_6','pb_f12s6_2_jog_angular_7','pb_f12s6_2_jog_angular_8',
-				'pb_f12s6_2_jog_angular_9','pb_f12s6_2_jog_angular_10','pb_f12s6_2_jog_angular_11',
-				'pb_f12s6_2_jog_angular_12','pb_f12s6_2_jog_angular_13','pb_f12s6_2_jog_angular_14',
-				'pb_f12s6_2_jog_angular_15','pb_f12s6_2_jog_angular_16','pb_f12s6_2_jog_angular_17',
-				'pb_f12s6_2_jog_angular_18','pb_f12s6_2_jog_angular_19',]
+		        'pb_f12s6_2_jog_angular_3','pb_f12s6_2_jog_angular_4','pb_f12s6_2_jog_angular_5',
+		        'pb_f12s6_2_jog_angular_6','pb_f12s6_2_jog_angular_7','pb_f12s6_2_jog_angular_8',
+		      'pb_f12s6_2_jog_angular_9','pb_f12s6_2_jog_angular_10','pb_f12s6_2_jog_angular_11',
+		      'pb_f12s6_2_jog_angular_12','pb_f12s6_2_jog_angular_13','pb_f12s6_2_jog_angular_14',
+		      'pb_f12s6_2_jog_angular_15','pb_f12s6_2_jog_angular_16','pb_f12s6_2_jog_angular_17',
+		      'pb_f12s6_2_jog_angular_18','pb_f12s6_2_jog_angular_19',]
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
@@ -386,17 +410,18 @@ class HandlerClass:
 #		auto no file loadedg angular btns enable or disable
 	def auto_no_file(self,enable):
 		data = ['pb_f12s5_2_gcode_run','pb_f12s5_2_gcode_step','pb_f12s5_2_gcode_pause',
-				'pb_f12s5_2_gcode_abort','pb_f12s5_2_gcode_run_from','pb_f12s5_2_gcode_optn_stop',
-				'pb_f12s5_2_gcode_block_del','pb_f12s5_2_gcode_unload']
+		        'pb_f12s5_2_gcode_abort','pb_f12s5_2_gcode_run_from','pb_f12s5_2_gcode_optn_stop',
+		        'pb_f12s5_2_gcode_block_del','pb_f12s5_2_gcode_unload']
 		for num, btn in enumerate(data, start=0):
 			btn = 'self.w.' + (str(data[num])) + '.setEnabled(' + (str(enable)) + ')'
 			exec btn
 
 	# get machine units from ini file - linear and angular
-	# linear units:  machine_control[0], in=0, inch=0, imperial=0, mm=1, metric=1
-	# angular units: machine_control[1], deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
-	# units convert: machine_control[2], 0=no conversion, 1=convert to inch, 2=convert to metric
-
+	# linear units:  self.machine_info[0], in=0, inch=0, imperial=0, mm=1, metric=1
+	# angular units: self.machine_info[1], deg=0, degree=1, rad=2, radian=3, grad=4, gon=5
+	# units convert: self.machine_info[2], 0=no conversion, 1=convert to inch, 2=convert to metric
+	# Homing: 		 self.machine_info[3], homing all selected: 0 = False 1 = True
+	# jogging		 self.machine_info[4], jogging in progress: -1 = no 1 = Yes
 
 ##### Start loading values from 'ini' file now #####
 
@@ -462,22 +487,43 @@ class HandlerClass:
 		self.w.pb_f12s6_1_jog_position_6.setText(jog_pos_cmds[6][0])
 		self.w.pb_f12s6_1_jog_position_7.setText(jog_pos_cmds[7][0])
 
-		# set position slider range, min and max values from ini file
-		position_max_rate = int(self.inifile.find('X1GUI', 'POSITION_MAX_RATE'))
-		self.w.scrb_f12s6_1_jog_position_slow.setRange(1,position_max_rate)
-		self.w.scrb_f12s6_1_jog_position_fast.setRange(1,position_max_rate)
 
-		# set position slow slider values and label from ini file
-		position_slow_rate = self.inifile.find('X1GUI', 'POSITION_SLOW')
-		self.jogging_control[2] = self.inifile.find('X1GUI', 'POSITION_SLOW')
-		self.w.scrb_f12s6_1_jog_position_slow.setValue(int(self.jogging_control[2]))
-		self.w.lab_f12s6_1_jog_position_slow.setText(str(self.jogging_control[2]))
 
-		# set position fast slider values and label from ini file
-		position_fast_rate  = self.inifile.find('X1GUI', 'POSITION_FAST')
-		self.jogging_control[3] = self.inifile.find('X1GUI', 'POSITION_FAST')
-		self.w.scrb_f12s6_1_jog_position_fast.setValue(int(self.jogging_control[3]))
-		self.w.lab_f12s6_1_jog_position_fast.setText(str(self.jogging_control[3]))
+	def slider_range_values(self):
+		if self.jog_control[1] == 0:	# initialize
+			pos_max_rate = int(self.inifile.find('X1GUI', 'POSITION_MAX_RATE'))
+			lin_max_rate = int(self.inifile.find('X1GUI', 'LINEAR_MAX_RATE'))
+			ang_max_rate = int(self.inifile.find('X1GUI', 'ANGULAR_MAX_RATE'))
+			self.jog_rates[3] = self.inifile.find('X1GUI', 'POSITION_SLOW')
+			self.jog_rates[4] = self.inifile.find('X1GUI', 'POSITION_FAST')
+			self.jog_rates[5] = self.inifile.find('X1GUI', 'LINEAR_SLOW')
+			self.jog_rates[6] = self.inifile.find('X1GUI', 'LINEAR_FAST')
+			self.jog_rates[7] = self.inifile.find('X1GUI', 'ANGULAR_SLOW')
+			self.jog_rates[8] = self.inifile.find('X1GUI', 'ANGULAR_FAST')
+
+			self.w.scrb_f12s6_1_jog_position_slow.setRange(1,pos_max_rate)
+			self.w.scrb_f12s6_1_jog_position_fast.setRange(1,pos_max_rate)
+			self.w.scrb_f12s6_1_jog_position_slow.setValue(int(self.jog_rates[3]))
+			self.w.lab_f12s6_1_jog_position_slow.setText(str(self.jog_rates[3]))
+			self.w.scrb_f12s6_1_jog_position_fast.setValue(int(self.jog_rates[4]))
+			self.w.lab_f12s6_1_jog_position_fast.setText(str(self.jog_rates[4]))
+
+			self.w.scrb_f12s6_0_jog_linear_slow.setRange(1,lin_max_rate)
+			self.w.scrb_f12s6_0_jog_linear_fast.setRange(1,lin_max_rate)
+			self.w.scrb_f12s6_0_jog_linear_slow.setValue(int(self.jog_rates[5]))
+			self.w.lab_f12s6_0_jog_linear_slow.setText(str(self.jog_rates[5]))
+			self.w.scrb_f12s6_0_jog_linear_fast.setValue(int(self.jog_rates[6]))
+			self.w.lab_f12s6_0_jog_linear_fast.setText(str(self.jog_rates[6]))
+
+			self.w.scrb_f12s6_2_jog_angular_slow.setRange(1,ang_max_rate)
+			self.w.scrb_f12s6_2_jog_angular_fast.setRange(1,ang_max_rate)
+			self.w.scrb_f12s6_2_jog_angular_slow.setValue(int(self.jog_rates[7]))
+			self.w.lab_f12s6_2_jog_angular_slow.setText(str(self.jog_rates[7]))
+			self.w.scrb_f12s6_2_jog_angular_fast.setValue(int(self.jog_rates[8]))
+			self.w.lab_f12s6_2_jog_angular_fast.setText(str(self.jog_rates[8]))
+
+
+
 
 
 # 		get marco file list of macro buttons
@@ -501,7 +547,7 @@ class HandlerClass:
 		macro[13] = self.inifile.find('X1GUI', 'MACRO_FILE_13')
 		macro[14] = self.inifile.find('X1GUI', 'MACRO_FILE_14')
 
- 		#remove items that were blank and have been marked with 'None'
+		#remove items that were blank and have been marked with 'None'
 		macro = filter(lambda v: v is not None, macro)
 
 		# Since there may have been items marked with 'None'
@@ -525,167 +571,95 @@ class HandlerClass:
 		for index, obj in enumerate(names):
 			exec('self.w.pb_f6s2_2_macro_'+str(index)+'.setText(str(names['+str(index)+']))')
 
-#		building linear inch increment list
-	def build_jogging_increments(self):
-		print 'getting all jogging increments'
-#		building linear inch jogging increment list
-		inch_incrs = range(23)			 # make a list that has 23 items [0] to [22]
-		inch_incrs[0:] = [-1] * 23		 # set all items in list to float value -1
-		if self.machine_control[0] == 0: # are machine units are reported to be in inches?
-			inch_incrs[0] = 1  			 # if yes mark this list as being the active one
-		inch_incrs[1] = 0    			 # 0 means that all values in inches
-		inch_incrs[2] = float(self.inifile.find('X1GUI', 'LINEAR_INCR_INCH_DEFAULT'))
-		# now work with the increment list itself
-		inch_incr  = self.inifile.find('X1GUI', 'LINEAR_INCR_INCH') # increments from ini file
-		inch_incr  = list(inch_incr.split(',')) 					# convert these to a list
-		inch_list = [float(i) for i in inch_incr]					# convert values to float
-		a=0
-		for i in inch_incr:					# insert the float values in the inch_incrs list
-			inch_incrs[a+3]=inch_list[a] 	# with an offset of 3
-			a=a+1
-		self.inch_incr_list = inch_incrs    # list is ready to use as: self.inch_incr_list
+	def build_jog_increments(self):
+		# =========
+		inch_incr = self.inifile.find('X1GUI', 'LINEAR_INCR_INCH') 	# increments from ini file
+		inch_incr = list(inch_incr.split(',')) 						# convert to list
+		inch_incr = [float(i) for i in inch_incr]					# convert values to float
+		a = 0
+		for i in inch_incr:
+			self.inch_increments[a]=inch_incr[a]
+			if a <= 18: a=a+1
+		self.inch_increments[20] = float(self.inifile.find('X1GUI', 'LINEAR_INCR_INCH_DEFAULT'))
+		self.jog_control[7] = 0	# needs to be zero at start up
 
-		# set a inch jogging button to true if there is a value match
-		search_value = inch_incrs[2]
-		index =(inch_list.index(search_value))
-		self.jogging_control[10] = index
-		if index < 20:
-			exec (self.jog_linear_buttons[index])
-		else:
-			print "Error: Default linear inch jog increment button .ini value missmatch:"
+		# =========
+		metric_incr = self.inifile.find('X1GUI', 'LINEAR_INCR_MM') 	# increments from ini file
+		metric_incr = list(metric_incr.split(',')) 					# convert to list
+		metric_incr = [float(i) for i in metric_incr]				# convert values to float
+		a = 0
+		for i in metric_incr:
+			self.metric_increments[a]=metric_incr[a]
+			if a <= 18: a=a+1
+		self.metric_increments[20] = float(self.inifile.find('X1GUI', 'LINEAR_INCR_MM_DEFAULT'))
+		self.jog_control[8] = 0	# needs to be zero at start up
 
-#		building linear metric jogging increment list
-		metric_incrs = range(23)			 # make a list that has 23 items [0] to [22]
-		metric_incrs[0:] = [-1] * 23		 # set all items in list to float value -1
-		if self.machine_control[0] == 1: 	 # are machine units are reported to be in metric?
-			metric_incrs[0] = 1  			 # if yes mark this list as being the active one
-		metric_incrs[1] = 1    			 	 # 1 means that all values in mm
-		metric_incrs[2] = float(self.inifile.find('X1GUI', 'LINEAR_INCR_MM_DEFAULT'))
-
-		# now get work with the increment list itself
-		metric_incr  = self.inifile.find('X1GUI', 'LINEAR_INCR_MM') # increments from ini file
-		metric_incr  = list(metric_incr.split(',')) 				# convert these to a list
-		metric_list = [float(i) for i in metric_incr]				# convert values to float
-		a=0
-		for i in metric_incr:					# insert the float values in the metric_incrs list
-			metric_incrs[a+3]=metric_list[a] 	# with an offset of 3
-			a=a+1
-		self.metric_incr_list = metric_incrs    # list is ready to use as: self.metric_incr_list
-
-		# set a metric jogging button to true if there is a value match
-		search_value = metric_incrs[2]
-		index =(metric_list.index(search_value))
-		self.jogging_control[11] = index
-		if index < 20:
-			exec (self.jog_linear_buttons[index])
-		else:
-			print "Error: Default linear metric jog increment button .ini value missmatch:"
-
-#		building angular jogging increment list
-		# angular units are decoded by: self.machine_control
-		angular_incrs = range(23)			 # make a list that has 23 items [0] to [22]
-		angular_incrs[0:] = [-1] * 23		 # set all items in list to float value -1
-		angular_incrs[0] = -1				 # -1= no table 0=is table found 1=actively being used
-		angular_incrs[1] = self.machine_control[1] # angular units type 0,1,2,3,4,5
-		angular_incrs[2] = float(self.inifile.find('X1GUI', 'ANGULAR_INCR_DEFAULT'))
-
-		# now get work with the increment list itself
-		angular_incr  = self.inifile.find('X1GUI', 'ANGULAR_INCR') # increments from ini file
-		angular_incr  = list(angular_incr.split(',')) 				# convert these to a list
-		angular_list = [float(i) for i in angular_incr]				# convert values to float
-		a=0
-		for i in angular_incr:					# insert the float values in the angular_incrs list
-			angular_incrs[a+3]=angular_list[a] 	# with an offset of 3
-			a=a+1
-		self.angular_incr_list = angular_incrs  # list is ready to use as: self.angular_incr_list
-
-		# set a angular jogging button to true if there is a value match
-		search_value = angular_incrs[2]
-		index =(angular_list.index(search_value))
-		self.jogging_control[12] = angular_list[index]
-		self.jogging_control[13] = index
-		if index < 20:
-			exec (self.jog_angular_buttons[index])
-		else:
-			print "Error: Default angular jog increment button .ini value missmatch:"
-		self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
-		print 'default angular jog increment set to: ', self.jogging_control[12]
+		# =========
+		angu_incr = self.inifile.find('X1GUI', 'ANGULAR_INCR') 		# increments from ini file
+		angu_incr = list(angu_incr.split(',')) 						# convert to list
+		angu_incr = [float(i) for i in angu_incr]					# convert values to float
+		a = 0
+		for i in angu_incr:
+			self.angular_increments[a]=angu_incr[a]
+			if a <= 18: a=a+1
+		self.angular_increments[20] = float(self.inifile.find('X1GUI', 'ANGULAR_INCR_DEFAULT'))
+		self.jog_control[9] = 0	# needs to be zero at start up
 
 
-#
-#		label linear inch and metric jogging buttons
-	def label_linear_jogging_buttons(self):
+	def label_linear_jog_btns(self):
 		print 'labeling and adding values to linear jogging buttons'
-		if self.inch_incr_list[0] == 1:                              # inch list is in use
-			self.active_lin_incr_list = self.inch_incr_list[3:23]    # [3:23] start and end of values list
-			local_linear = self.inch_incr_list[3:23]                 #  same
-			self.w.plab_f12s6_0_jog_mode_linear.setText('INCH - LINEAR JOG MODE')
-			self.jogging_control[9] = self.inch_incr_list[2]         # increment value
-			index = self.jogging_control[10]
-			if index != -1:
-				exec (self.jog_linear_buttons[index])
+		if self.jog_control[6] == 1:	# inch
+			index = self.jog_control[7]
+			for index, value in enumerate(self.inch_increments[0:20]):	# limit to increment values
+				btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.setText(str(self.inch_increments['+str(index)+']))'
+				exec btn
+				btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.set_true_string(str(self.inch_increments['+str(index)+']))'
+				exec btn
+			if self.jog_control[7] == 0: # at init only
+				search_value = self.inch_increments[20]
+				index = (self.inch_increments.index(search_value))
+				self.jog_control[7] = index
+			if self.jog_control[7] > 0: # after init
+				index = self.jog_control[7]
+			exec (self.jog_linear_buttons[index])	# set this button to true at init
+			self.jog_rates[0] = self.inch_increments[index]
 
-		if self.metric_incr_list[0] == 1:                            # metric list is in use
-			self.active_lin_incr_list = self.metric_incr_list[3:23]  # [3:23] start and end of values list
- 			local_linear = self.metric_incr_list[3:23]				 # same
-			self.w.plab_f12s6_0_jog_mode_linear.setText('MM - LINEAR JOG MODE')
-			self.jogging_control[9] = self.metric_incr_list[2]		 # increment value
-			index = self.jogging_control[11]
-			if index != -1:
-				exec (self.jog_linear_buttons[index])
+		if self.jog_control[6] == 2:	# metric
+			search_value = self.metric_increments[20]
+			for index, value in enumerate(self.metric_increments[0:20]):  # limit to increment values
+				btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.setText(str(self.metric_increments['+str(index)+']))'
+				print btn
+				print self.metric_increments[0:20]
+				exec (btn)
+				btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.set_true_string(str(self.metric_increments['+str(index)+']))'
+				exec btn
+			if self.jog_control[8] == 0: # at init only
+				search_value = self.metric_increments[20]
+				index = (self.metric_increments.index(search_value))
+				self.jog_control[8] = index
+			if self.jog_control[8] > 0: # after init
+				index = self.jog_control[8]
+			exec (self.jog_linear_buttons[index])	# set this button to true at init
+			self.jog_rates[1] = self.metric_increments[index]
+		self.label_panel_labels()
 
-		# label buttons with in use list values
-		for index, obj in enumerate(local_linear):
-			btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.setText(str(local_linear['+str(index)+']))'
-			exec btn
-			btn = 'self.w.pb_f12s6_0_jog_linear_'+str(index)+'.set_true_string(str(local_linear['+str(index)+']))'
-			exec btn
-
-		# status linuxcnc for current increment value
-		self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-		print 'default linear jog increment is: ', self.jogging_control[9]
-
-		# set linear slider range, min and max values from ini file
-		linear_max_rate = int(self.inifile.find('X1GUI', 'LINEAR_MAX_RATE'))
-		self.w.scrb_f12s6_0_jog_linear_slow.setRange(1,linear_max_rate)
-		self.w.scrb_f12s6_0_jog_linear_fast.setRange(1,linear_max_rate)
-
-		# set linear slow slider values and label from ini file
-		self.jogging_control[4] = self.inifile.find('X1GUI', 'LINEAR_SLOW')
-		self.w.scrb_f12s6_0_jog_linear_slow.setValue(int(self.jogging_control[4]))
-		self.w.lab_f12s6_0_jog_linear_slow.setText(str(self.jogging_control[4]))
-
-		# set linear fast slider values and label from ini file
-		self.jogging_control[5] = self.inifile.find('X1GUI', 'LINEAR_FAST')
-		self.w.scrb_f12s6_0_jog_linear_fast.setValue(int(self.jogging_control[5]))
-		self.w.lab_f12s6_0_jog_linear_fast.setText(str(self.jogging_control[5]))
-
-#
-#		label angular jogging buttons
-	def label_angular_jogging_buttons(self):
+	def label_angular_jog_btns(self):
 		print 'labeling and adding values to angular jogging buttons'
-		self.active_angular_incr_list = self.angular_incr_list[3:23]
-		local_angular = self.angular_incr_list[3:23]
-		for index, obj in enumerate(local_angular):
-			btn = 'self.w.pb_f12s6_2_jog_angular_'+str(index)+'.setText(str(local_angular['+str(index)+']))'
+		index = self.jog_control[9]
+		search_value = self.angular_increments[20]
+		for index, value in enumerate(self.angular_increments[0:20]):	 # limit to increment values
+			btn = 'self.w.pb_f12s6_2_jog_angular_'+str(index)+'.setText(str(self.angular_increments['+str(index)+']))'
 			exec btn
-			btn = 'self.w.pb_f12s6_2_jog_angular_'+str(index)+'.set_true_string(str(local_angular['+str(index)+']))'
+			btn = 'self.w.pb_f12s6_2_jog_angular_'+str(index)+'.set_true_string(str(self.angular_increments['+str(index)+']))'
 			exec btn
+			index = (self.angular_increments.index(search_value))
+			if self.jog_control[9] == 0: # at init only
+				if index < 20:
+					exec (self.jog_angular_buttons[index])	# set this button to true init
+					self.jog_control[9] = index
+			self.jog_rates[2] = self.angular_increments[index]
 
-		# set angular slider range, min and max values from ini file
-		angular_max_rate = int(self.inifile.find('X1GUI', 'ANGULAR_MAX_RATE'))
-		self.w.scrb_f12s6_2_jog_angular_slow.setRange(1,angular_max_rate)
-		self.w.scrb_f12s6_2_jog_angular_fast.setRange(1,angular_max_rate)
 
-		# set angular slow slider values and label from ini file
-		self.jogging_control[6] = self.inifile.find('X1GUI', 'ANGULAR_SLOW')
-		self.w.scrb_f12s6_2_jog_angular_slow.setValue(int(self.jogging_control[6]))
-		self.w.lab_f12s6_2_jog_angular_slow.setText(str(self.jogging_control[6]))
-
-		# set angular fast slider values and label from ini file
-		self.jogging_control[7] = self.inifile.find('X1GUI', 'ANGULAR_FAST')
-		self.w.scrb_f12s6_2_jog_angular_fast.setValue(int(self.jogging_control[7]))
-		self.w.lab_f12s6_2_jog_angular_fast.setText(str(self.jogging_control[7]))
 
 #		Preference file get and set prefered probing values
 	def get_preferences(self):
@@ -788,59 +762,186 @@ class HandlerClass:
 # ===================================================================
 	def on_periodic(self,w):
 		self.s.poll()
-		self.update_dros()
 		self.update_gcodes()
 		self.update_mcodes()
-		self.update_spindles()
+#		self.update_spindles()
 		self.update_limits_label()
 		self.w.lab_f11s4_0_feed_rate.setText('%.2f' %(float(self.s.current_vel * 100)))
 		self.w.lab_f12s5_2_gcode_motion_line.setText(str(int(self.s.motion_line)))
 		self.w.lab_f12s5_2_gcode_current_line.setText(str(int(self.s.current_line)))
 		self.w.lab_f11s4_0_tool_number.setText(str(int(self.s.tool_in_spindle)))
 		self.interp_state()
-		self.safe_home_all()
-		self.mdi_to_manual()
-		print self.jogging_control
+#		self.safe_home_all()
+#		self.mdi_to_manual()
+		self.jogging_handler()
+
+
+#		print 'self.jog_control:       ', self.jog_control
+#		print 'line 856 jog_control 7: ', self.jog_control[7]
+#		print 'line 856 jog_control 8: ', self.jog_control[8]
+#		print 'line 856 jog_control 9: ', self.jog_control[9]
+#		print 'line 859  jog_rates:    ', self.jog_rates
+
+
+		feed = self.s.feedrate
+		self.w.lab_f12s5_0_jog_rate.setText(str(feed*100))
 
 		self.w.lab_f4_time_date.setText(strftime('%H:%M:%S\n%m/%d/%Y'))
 		return True
+
+	def jogging_handler(self):
+		if self.machine_info[4] == -1:						# no jogging allowed
+			return
+
+		if self.jog_control[2] == 1:						# continous jog  <<<<<<
+			jointflag =	1
+			axisjoint =	self.jog_control[4]
+			if self.machine_info[4] == 2:					# stop jog for selected axis
+				self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+				self.machine_info[4] = -1
+				return
+			rate = 0
+			if self.jog_control[3] == 1:
+				 rate = (self.jog_rates[5])					# slow linear jog
+			if self.jog_control[3] == 2:
+				 rate = (self.jog_rates[6])					# fast linear jog
+			self.c.feedrate(float(rate)/100)
+			dir = (self.jog_control[5])
+			if dir == -1:
+				dir_vel = (float(rate)/100)*-1
+			else:
+				dir_vel = (float(rate)/100)
+			self.c.jog(linuxcnc.JOG_CONTINUOUS,1,axisjoint,(float(dir_vel)))
+
+
+		if self.jog_control[1] == 2:						# linear jogging   <<<<<<
+			if self.jog_control[2] == 2:					# incremental jog  <<<<<<
+				jointflag =	1
+				axisjoint =	self.jog_control[4]
+				if self.machine_info[4] == 2:				# stop jog for selected axis
+					self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+					self.machine_info[4] = -1
+					return
+				rate = 0
+				if self.jog_control[3] == 1:
+					rate = (self.jog_rates[5])				# slow linear jog
+				if self.jog_control[3] == 2:
+					rate = (self.jog_rates[6])				# fast linear jog
+				self.c.feedrate(float(rate)/100)
+				dir = (self.jog_control[5])
+				if dir == -1:
+					dir_vel = (float(rate)/100)*-1
+				else:
+					dir_vel = (float(rate)/100)
+
+				if self.machine_info[0] == 1:				# machines units are inch
+					if self.jog_control[6] == 1:			# increments are inch
+						distance = self.jog_rates[0]
+					if self.jog_control[6] == 2:			# mm increments using inch machine
+						distance = self.jog_rates[1]/25.4
+
+				if self.machine_info[0] == 2:				# machines units are mm
+					if self.jog_control[6] == 2:			# increments are in mm
+						distance = self.jog_rates[1]
+					if self.jog_control[6] == 1:			# inch increments using mm machine
+						distance = self.jog_rates[0]*25.4
+
+				print 'DISTANCE: ',float(distance)
+				self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,(float(dir_vel)),(float(distance)))
+				self.w.lab_f12s5_0_jog_incr.setText(str(distance))
+				self.machine_info[4] = -1
+
+		if self.jog_control[1] == 3:						# angular jogging  <<<<<<
+			if self.jog_control[2] == 2:					# incremental jog  <<<<<<
+				jointflag =	1
+				axisjoint =	self.jog_control[4]
+				if self.machine_info[4] == 2:				# stop jog for selected axis
+					self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+					self.machine_info[4] = -1
+					return
+				rate = 0
+				if self.jog_control[3] == 1:
+ 					rate = (self.jog_rates[7])				# slow angular jog
+				if self.jog_control[3] == 2:
+					rate = (self.jog_rates[8])				# fast angular jog
+
+				self.c.feedrate(float(rate)/100)
+				dir = (self.jog_control[5])
+				if dir == -1:
+					dir_vel = (float(rate)/100)*-1
+				else:
+					dir_vel = (float(rate)/100)
+				distance = self.jog_rates[2]
+				print 'DISTANCE: ',float(distance)
+				self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,(float(dir_vel)),(float(distance)))
+				self.w.lab_f12s5_0_jog_incr.setText(str(distance))
+				self.machine_info[4] = -1
+
+		# not used yet
+		if self.jog_control[1] == 1:						# position jogging - by mdi cmd
+			if self.jog_control[2] == 2:					# incremental jogging
+				jointflag =	1
+				axisjoint =	self.jog_control[4]
+				if self.machine_info[4] == 2:				# stop jog for selected axis
+					self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+					self.machine_info[4] = -1
+					return
+				rate = 0
+				if self.jog_control[3] == 1:
+					 rate = (self.jog_rates[3])				# slow position jog
+				if self.jog_control[3] == 2:
+ 					rate = (self.jog_rates[4])				# fast position jog
+				self.c.feedrate(float(rate)/100)
+
+#				dir = (self.jog_control[5])
+#				if dir == -1:
+#					dir_vel = (float(rate)/100)*-1
+#				else:
+#					dir_vel = (float(rate)/100)
+#				distance = self.jog_rates[5]
+#				self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,(float(dir_vel)),(float(distance)))
+#				self.w.lab_f12s5_0_jog_incr.setText(str(distance))
+#				self.machine_info[4] = -1
+
+
+
 # ===================================================================
 	def mdi_to_manual(self):
-		if self.jogging_control[14] == -1:
+		if self.jog_control[10] == -1:
 			return
-		if self.jogging_control[14] == 1:
+		if self.jog_control[10] == 1:
 			if self.s.inpos == True:
 				# task_mode: manual = 1, auto = 2, midi = 3
 				if self.s.task_mode == 3:
 					self.c.mode(linuxcnc.MODE_MANUAL)
-					self.jogging_control[14] = -1
+					self.jog_control[10] = -1
 					print "mdi position cmd completed"
 
 	def safe_home_all(self):
-		if self.s.estop == 1: self.machine_control[3] = -1
-		if self.machine_control[3] == -1:
+		if self.s.estop == 1: self.machine_info[3] = -1
+		if self.machine_info[3] == -1:
 			return
-		if self.machine_control[3] == 1:
+		if self.machine_info[3] == 1:
 			data = range(9)
 			data[0:] = [','] * 9
 			data = self.s.homed
 			self.c.home(2)
 			self.c.wait_complete()
-			self.machine_control[3] = 2
+			self.machine_info[3] = 2
 		data = self.s.homed
 		if data[2] == 1:
-			if self.machine_control[3] == 2:
+			if self.machine_info[3] == 2:
 				print 'z is homed' #, data
 				self.c.home(0)
 				self.c.home(1)
 				self.c.wait_complete()
-				self.machine_control[3] = 3
-		if self.machine_control[3] == 3:
+				self.machine_info[3] = 3
+		if self.machine_info[3] == 3:
 			if data[0] == 1:
 				print 'x is homed' #, data
 			if data[1] == 1:
 				print 'y is homed' #, data
-			self.machine_control[3] = -1
+			self.machine_info[3] = -1
 
 
 #		update interpreter status display
@@ -860,35 +961,17 @@ class HandlerClass:
 #		update the in limits label on front panel to indicate which axis is in limits
 	def update_limits_label(self):
 		if self.s.limit[0] > 0:
-			self.w.plab_f12s7_0_limits_label.setText('X LIM')
+			self.w.plab_f2_limits_label.setText('X LIM')
 		elif self.s.limit[1] > 0:
-			self.w.plab_f12s7_0_limits_label.setText('Y LIM')
+			self.w.plab_f2_limits_label.setText('Y LIM')
 		elif self.s.limit[2] > 0:
-			self.w.plab_f12s7_0_limits_label.setText('Z LIM')
+			self.w.plab_f2_limits_label.setText('Z LIM')
 		else:
-			self.w.plab_f12s7_0_limits_label.setText('No Lim')
+			self.w.plab_f2_limits_label.setText('Limits')
 			pass
 
-	def plab_f12s7_0_in_limits_label_setText(self):
+	def plab_f2_limits_label_setText(self):
 		do_nothing =0
-
-#		periodic dro updates
-	def update_dros(self):
-		actualpos0 = '%.4f' %(self.s.actual_position[0])
-		actualpos1 = '%.4f' %(self.s.actual_position[1])
-		actualpos2 = '%.4f' %(self.s.actual_position[2])
-		actualpos3 = '%.4f' %(self.s.actual_position[3])
-
-		dtg0 = '%.4f' %(self.s.dtg[0])
-		dtg1 = '%.4f' %(self.s.dtg[1])
-		dtg2 = '%.4f' %(self.s.dtg[2])
-		dtg3 = '%.4f' %(self.s.dtg[3])
-
-		position0 = '%.4f' %(self.s.position[0])
-		position0 = '%.4f' %(self.s.position[1])
-		position0 = '%.4f' %(self.s.position[2])
-		position0 = '%.4f' %(self.s.position[3])
-
 
 #		periodic gcodes update
 	def update_gcodes(self):
@@ -960,6 +1043,8 @@ class HandlerClass:
 			self.w.pb_f1_power.setEnabled(True)
 			units = self.inifile.find('TRAJ', 'LINEAR_UNITS')
 			ang_units = self.inifile.find('TRAJ', 'ANGULAR_UNITS')
+			self.jog_control[0] = 0 # jogging disable
+			self.jog_control[1] = 0 # jogging mode set to none
 			print 'estop cleared'
 
 # F1	MainWindow panel buttons
@@ -988,7 +1073,7 @@ class HandlerClass:
 			self.c.mode(linuxcnc.MODE_MANUAL)
 			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(0)
-			self.w.pb_f2_keyboard.setEnabled(False)
+			self.w.pb_f1_keyboard.setEnabled(False)
 			self.w.pb_f3_graphic.animateClick(True)
 			self.w.pb_f2_help.setEnabled(True)
 			print 'manual mode'
@@ -1000,7 +1085,7 @@ class HandlerClass:
 			self.c.mode(linuxcnc.MODE_MDI)
 			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(1)
-			self.w.pb_f2_keyboard.setEnabled(True)
+			self.w.pb_f1_keyboard.setEnabled(True)
 			print 'mdi mode'
 
 	def pb_f1_auto_toggle(self,pressed):
@@ -1008,30 +1093,26 @@ class HandlerClass:
 			self.c.mode(linuxcnc.MODE_AUTO)
 			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(2)
-			self.w.pb_f2_keyboard.setEnabled(False)
+			self.w.pb_f1_keyboard.setEnabled(False)
 			file_name = str(self.s.file)
 			enable = '.ngc' in file_name
 			self.auto_no_file(enable)
 			print 'auto mode'
 
-	def pb_f1_spare_toggle(self,pressed):
-		# hal pin: x1mill_p.pb_f1_spare
-		if pressed:
-			name = self.w.sender().text()
-			print name
-
-# F2	MainWindow panel buttons
-	def pb_f2_keyboard_toggle(self,pressed):
+	def pb_f1_keyboard_toggle(self,pressed):
 		if pressed:
 			self.w.stackedWidget_1.setCurrentIndex(1)
 			# sends using Hal Xembed: command-string 'matchbox-keyboard --xid'
 		else:
 			self.w.stackedWidget_1.setCurrentIndex(0)
 
-	def pb_f2_spare_toggle(self):
-		# hal pin: x1mill_p.pb_f2_spare
-		name = self.w.sender().text()
-		print name
+
+# F2	MainWindow panel buttons
+	def pb_f2_abort_toggle(self,pressed):
+		# hal pin: x1mill_p.pb_f1_spare
+		if pressed:
+			name = self.w.sender().text()
+			print name
 
 	def pb_f2_help_toggle(self):
 		self.w.stackedWidget_5.setCurrentIndex(4)
@@ -1177,8 +1258,8 @@ class HandlerClass:
 		self.c.spindleoverride(spin_1_rps,1)
 		self.w.lab_f6s2_0_spindle_1_rpm.setText(str(self.w.scrb_f6s2_0_spindle_1_rpm.value()/100))
 	def scrb_f6s2_0_spindle_1_rpm_valueChanged(self):
-		   value1 = self.w.sender().value()
-		   print 'valueChanged',value1
+		value1 = self.w.sender().value()
+		print 'valueChanged',value1
 #		   # the below to see progress bar move - will come from spindle encoder later
 #		   self.w.pbar_f6s2_0_spindle_1_rpm_setValue(value1)
 	def pb_f6s2_0_spindle_1_forward_toggle(self,pressed):
@@ -1192,33 +1273,88 @@ class HandlerClass:
 			self.c.spindle(-1,400,1) # dir/speed/spindle
 
 # F6 	Index 1 stackedWidget_2
+	def pb_f6s2_1_zero_current_toggle(self):
+		cmd = 'G10 L2 P0 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g54_toggle(self):
+		cmd = 'G10 L2 P1 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g55_toggle(self):
+		cmd = 'G10 L2 P2 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g56_toggle(self):
+		cmd = 'G10 L2 P3 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g57_toggle(self):
+		cmd = 'G10 L2 P4 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g58_toggle(self):
+		cmd = 'G10 L2 P5 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g59_toggle(self):
+		cmd = 'G10 L2 P6 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g591_toggle(self):
+		cmd = 'G10 L2 P7 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g592_toggle(self):
+		cmd = 'G10 L2 P8 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
+	def pb_f6s2_1_zero_g593_toggle(self):
+		cmd = 'G10 L2 P9 X0 Y0 Z0 A0'
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_x_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_y_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_z_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_a_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_b_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_c_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_u_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_v_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
 	def pb_f6s2_1_joint_zero_w_click(self):
-		name = self.w.sender().text()
-		print name
+		cmd = ''
+		self.fast_zero(cmd)
+
+	def fast_zero(self,cmd):
+		self.c.mode(linuxcnc.MODE_MDI)
+		self.c.mdi(str(cmd))
+		print 'COMMAND >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:',cmd
+		self.jog_control[10] = 1 # position mdi cmd mode change
+
 
 # F6 	Index 2 stackedWidget_2 - uses [MDI_COMMAND_LIST] in INI file
 	def pb_f6s2_2_macro_0_click(self,name):
@@ -1359,31 +1495,29 @@ class HandlerClass:
 			name = self.w.sender().text()
 			print 'Dro changed to:',name
 
-	def pb_f7_dro_units_toggle(self,pressed):
-		if pressed: 							 # dro units change requested <<<<
-			if self.machine_control[0]  == 0:    # machine units are in inches but user wants metric
-				self.inch_incr_list[0]   = 0     # mark inch list as no longer in use
-				self.metric_incr_list[0] = 1     # activate metric list
-				self.machine_control[2]  = 2     # values to be converted to metric
+	def pb_f7_dro_units_toggle(self,pressed):  # dro units change requested <<<<
+		if pressed:
+			if self.machine_info[0]  == 1:		# machine units are in inches dro btn calls for metric increments
+				self.jog_control[6] = 2			# metric increments in use now
+				self.machine_info[2]  = 2		# values to be converted to metric
+				self.label_linear_jog_btns()	# change button and panel labels
 
-			if self.machine_control[0]  == 1:    # machine units are metric but user wants inches
-				self.metric_incr_list[0] = 0     # mark metric list as no longer in use
-				self.inch_incr_list[0]   = 1     # activate inch list
-				self.machine_control[2]  = 1     # values to be converted to inch
-			self.label_linear_jogging_buttons()  # change button and panel labels
-			self.set_new_lin_incr()
-		else: 		 				             # back to machines units <<<<
-			if self.machine_control[0]  == 1:    # machine is looking for metric list
-				self.inch_incr_list[0]   = 0     # mark inch list as no longer in use
-				self.metric_incr_list[0] = 1     # activate metric list
-				self.machine_control[2]  = 0     # values to be converted to metric
+			if self.machine_info[0]  == 2:		# machine units are metric but dro btn calls for inch increments
+				self.jog_control[6] = 1			# inch increments in use now
+				self.machine_info[2]  = 1		# values to be converted to inch
+				self.label_linear_jog_btns()	# change button and panel labels
 
-			if self.machine_control[0]  == 0:    # machine is looking for inch list
-				self.metric_incr_list[0] = 0     # mark metric list as no longer in use
-				self.inch_incr_list[0]   = 1     # activate inch list
-				self.machine_control[2]  = 0     # values to be converted to inch
-			self.label_linear_jogging_buttons()  # change button and panel labels
-			self.set_new_lin_incr()
+		else: 	 # back to machines ini units <<<<
+			if self.machine_info[0]  == 2:		# machine units are metric and dro btn calls for metric increments
+				self.jog_control[6] = 2			# metric increments in use now
+				self.machine_info[2]  = 2  		# values to be converted to metric
+				self.label_linear_jog_btns()	# change button and panel labels
+
+			if self.machine_info[0]  == 1:		# machine units are inch and dro btn calls for inch increments
+				self.jog_control[6] = 1			# inch increments in use now
+				self.machine_info[2]  = 1		# values to be converted to inch
+				self.label_linear_jog_btns()	# change button and panel labels
+
 
 	def pb_f7_dro_spare_toggle(self,pressed):
 		if pressed:
@@ -1400,212 +1534,125 @@ class HandlerClass:
 	def dro_f8_display_a_setText(self):
 		self=0
 
-# F12	axis jogging buttons for x,y,z and a
-		# jog X pos
+# F12
+
 	def pb_f12s5_0_jog_pos_x_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=0,direction=1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=0,direction=1)
+		self.jog_control[4]	= 0			# axis number
+		self.jog_control[5] = 1			# direction
+		self.machine_info[4] = 1    	# start jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_pos_x_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 0		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
-		# jog X neg
+
 	def pb_f12s5_0_jog_neg_x_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=0,direction=-1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=0,direction=-1)
-	def pb_f12s5_0_jog_neg_x_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		self.jog_control[4]	= 0 		# axis number
+		self.jog_control[5] = -1		# direction
+		self.machine_info[4] = 1     	# allow jogging
+		self.jogging_handler()
 
-		# jog Y pos
+	def pb_f12s5_0_jog_neg_x_released(self):
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 0		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
+
+
 	def pb_f12s5_0_jog_pos_y_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=1,direction=1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=1,direction=1)
+		self.jog_control[4]	= 1			# axis number
+		self.jog_control[5] = 1			# direction
+		self.machine_info[4] = 1   		# start jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_pos_y_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 1		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
 		# jog Y neg
 	def pb_f12s5_0_jog_neg_y_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=1,direction=-1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=1,direction=-1)
+		self.jog_control[4]	= 1 		# axis number
+		self.jog_control[5] = -1		# direction
+		self.machine_info[4] = 1    	# allow jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_neg_y_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 1		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
 		# jog Z pos
 	def pb_f12s5_0_jog_pos_z_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=2,direction=1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=2,direction=1)
+		self.jog_control[4]	= 2			# axis number
+		self.jog_control[5] = 1			# direction
+		self.machine_info[4] = 1   	 	# start jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_pos_z_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 2		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
-		# jog Z neg
 	def pb_f12s5_0_jog_neg_z_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=2,direction=-1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=2,direction=-1)
+		self.jog_control[4]	= 2 		# axis number
+		self.jog_control[5] = -1		# direction
+		self.machine_info[4] = 1    	# allow jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_neg_z_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 2		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
-		# jog A pos
 	def pb_f12s5_0_jog_pos_a_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=3,direction=1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=3,direction=1)
+		self.jog_control[4]	= 3			# axis number
+		self.jog_control[5] = 1			# direction
+		self.machine_info[4] = 1     	# start jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_pos_a_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 3		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
-		# jog A neg
 	def pb_f12s5_0_jog_neg_a_pressed(self):
-		if self.jogging_control[8] == 0:
-			self.jog_continuous(axisjoint=3,direction=-1)
-		if self.jogging_control[8] == 1:
-			self.jog_step(axisjoint=3,direction=-1)
+		self.jog_control[4]	= 3 		# axis number
+		self.jog_control[5] = -1		# direction
+		self.machine_info[4] = 1    	 # allow jogging
+		self.jogging_handler()
+
 	def pb_f12s5_0_jog_neg_a_released(self):
-		if self.jogging_control[8] == 0:
-			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+		if self.jog_control[2] == 1:	# continous jog
+			self.jog_control[4]	= 3		# axis number
+			self.jog_control[5] = 0		# direction
+			self.machine_info[4] = 2    # stop jogging
+			self.jogging_handler()
 
-#		continuous jogging mode
-	def jog_continuous(self,axisjoint,direction,distance=0):
-		if self.jogging_control[0] == 2:
-			print 'jog continuous linear'
-			self.w.stackedWidget_7.setCurrentIndex(0)
-			jointflag,axisjoint1 = STATUS.get_jog_info(axisjoint)
-			velocity = STATUS.get_jograte()/100
-			if direction == -1:
-				velocity = velocity * -1
-			self.c.jog(linuxcnc.JOG_CONTINUOUS,jointflag,axisjoint,velocity)
-		if self.jogging_control[0] == 3:
-			print 'jog continuous angular'
-			self.w.stackedWidget_7.setCurrentIndex(0)
-			jointflag,axisjoint1 = STATUS.get_jog_info(axisjoint)
-			velocity = STATUS.get_jograte_angular()/100
-			if direction == -1:
-				velocity = velocity * -1
-			self.c.jog(linuxcnc.JOG_CONTINUOUS,jointflag,axisjoint,velocity)
-
-#		increment jogging mode
-	def jog_step(self,axisjoint,direction,distance=0):
-		if self.jogging_control[0] == 2:
-			print 'jog increment linear'
-			self.w.stackedWidget_7.setCurrentIndex(2)
-			jointflag,axisjoint1 = STATUS.get_jog_info(axisjoint)
-			velocity = STATUS.get_jograte()/100
-			distance = STATUS.get_jog_increment()
-			if direction == -1:
-				velocity = velocity * -1
-			self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,velocity,distance)
-		if self.jogging_control[0] == 3:
-			print 'jog increment angular'
-			self.w.stackedWidget_7.setCurrentIndex(3)
-			jointflag,axisjoint1 = STATUS.get_jog_info(axisjoint)
-			velocity = STATUS.get_jograte_angular()/100
-			distance = STATUS.get_jog_increment_angular()
-			if direction == -1:
-				velocity = velocity * -1
-			self.c.jog(linuxcnc.JOG_INCREMENT,jointflag,axisjoint,velocity,distance)
-
-#		stop button display during jog position mode - those not used yet commented out
-	def pb_f12s7_1_jog_positioning_pressed(self):
-			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(4)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(5)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(6)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(7)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(8)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-
-#		stop button display during jog linear mode  - those not used yet commented out
-	def pb_f12s7_2_jog_lin_stop_all_pressed(self):
-			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-#			jointflag,axisjoint= STATUS.get_jog_info(6)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-#			jointflag,axisjoint= STATUS.get_jog_info(7)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-#			jointflag,axisjoint= STATUS.get_jog_info(8)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_2_jog_lin_stop_x_pressed(self):
-			jointflag,axisjoint= STATUS.get_jog_info(0)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_2_jog_lin_stop_y_pressed(self):
-			jointflag,axisjoint= STATUS.get_jog_info(1)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_2_jog_lin_stop_z_pressed(self):
-			jointflag,axisjoint= STATUS.get_jog_info(2)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_2_jog_lin_stop_u_pressed(self):
-			print 'jog_lin_stop_u is disabled'
-#			jointflag,axisjoint= STATUS.get_jog_info(6)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_2_jog_lin_stop_v_pressed(self):
-			print 'jog_lin_stop_v is disabled'
-#			jointflag,axisjoint= STATUS.get_jog_info(7)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_2_jog_lin_stop_w_pressed(self):
-			print 'jog_lin_stop_w is disabled'
-#			jointflag,axisjoint= STATUS.get_jog_info(8)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-
-#		stop button display during jog angular mode - those not used yet commented out
-	def pb_f12s7_3_jog_ang_stop_all_pressed(self):
-			print 'jog_ang_stop_all is disabled'
-#			jointflag,axisjoint= STATUS.get_jog_info(3)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-#			jointflag,axisjoint= STATUS.get_jog_info(4)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-#			jointflag,axisjoint= STATUS.get_jog_info(5)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_3_jog_ang_stop_a_pressed(self):
-			jointflag,axisjoint= STATUS.get_jog_info(3)
-			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_3_jog_ang_stop_b_pressed(self):
-			print 'jog_ang_stop_b is disabled'
-#			jointflag,axisjoint= STATUS.get_jog_info(4)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
-	def pb_f12s7_3_jog_ang_stop_c_pressed(self):
-			print 'jog_ang_stop_c is disabled'
-#			jointflag,axisjoint= STATUS.get_jog_info(5)
-#			self.c.jog(linuxcnc.JOG_STOP,jointflag,axisjoint)
+	def label_panel_labels(self):
+		if self.jog_control[6] == 1:	# Inch units
+			self.w.plab_f12s6_0_jog_mode_linear.setText('INCH - LINEAR JOG MODE')
+			self.w.plab_f12s5_0_jog_incr_label.setText('INCH INCR')
+		if self.jog_control[6] == 2:	# metric units
+			self.w.plab_f12s6_0_jog_mode_linear.setText('MM - LINEAR JOG MODE')
+			self.w.plab_f12s5_0_jog_incr_label.setText('MM INCR')
+		if self.jog_control[1] == 3:	# angular
+			self.w.plab_f12s5_0_jog_incr_label.setText('DEGREE INCR')
 
 #		jogging position mode - position jog mode is only for use
 #		with preset commands read from .ini file
@@ -1620,23 +1667,20 @@ class HandlerClass:
 		self.w.pb_f12s5_0_jog_neg_a.setEnabled(False)
 
 		if pressed:
-			STATUS.set_jog_increments(0,0)
-			self.w.pb_f12s5_0_jog_mode.setChecked(False)
-			self.w.pb_f12s5_0_jog_mode.setEnabled(False)
-			self.jogging_control[0] = 1
+#			STATUS.set_jog_increments(0,0)
+			self.w.pb_f12s5_0_jog_continous.setChecked(False)
+			self.w.pb_f12s5_0_jog_continous.setEnabled(False)
+			self.w.pb_f12s5_0_jog_increment.setChecked(False)
+			self.w.pb_f12s5_0_jog_increment.setEnabled(False)
+			self.jog_control[1] = 1
 			self.w.stackedWidget_6.setCurrentIndex(1)
-			self.w.stackedWidget_7.setCurrentIndex(1)
-			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-			if self.jogging_control[1] == 0:
-				STATUS.set_jograte(float(self.jogging_control[2]))
-			if self.jogging_control[1] == 1:
-				STATUS.set_jograte(float(self.jogging_control[3]))
-			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-			self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+#			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
+			self.label_panel_labels()
 
-#		jogging LINEAR mode button pushed
+
 	def pb_f12s5_0_jog_linear_toggle(self,pressed):
-		self.w.pb_f12s5_0_jog_mode.setEnabled(True)
+		self.w.pb_f12s5_0_jog_continous.setEnabled(True)
+		self.w.pb_f12s5_0_jog_increment.setEnabled(True)
 		self.w.pb_f12s5_0_jog_pos_x.setEnabled(True)
 		self.w.pb_f12s5_0_jog_neg_x.setEnabled(True)
 		self.w.pb_f12s5_0_jog_pos_y.setEnabled(True)
@@ -1645,29 +1689,18 @@ class HandlerClass:
 		self.w.pb_f12s5_0_jog_neg_z.setEnabled(True)
 		self.w.pb_f12s5_0_jog_pos_a.setEnabled(False)
 		self.w.pb_f12s5_0_jog_neg_a.setEnabled(False)
-		self.w.pb_f12s7_2_jog_lin_stop_all.show()
-		self.w.pb_f12s7_2_jog_lin_stop_x.show()
-		self.w.pb_f12s7_2_jog_lin_stop_y.show()
-		self.w.pb_f12s7_2_jog_lin_stop_z.show()
+		if pressed:
+			self.jog_control[1] = 2 # linear mode
+			self.w.stackedWidget_6.setCurrentIndex(0)
+			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
+			self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+			self.label_panel_labels()
 
-		self.jogging_control[0] = 2 # linear mode
-		self.w.stackedWidget_6.setCurrentIndex(0)
-		if self.jogging_control[8] == 0:
-			self.w.stackedWidget_7.setCurrentIndex(0)
-			STATUS.set_jog_increments(0,0)
-		if self.jogging_control[8] == 1:
-			self.w.stackedWidget_7.setCurrentIndex(2)
-			STATUS.set_jog_increments(self.jogging_control[9],0)
-		if self.jogging_control[1] == 0:
-			STATUS.set_jograte(float(self.jogging_control[4]))
-		if self.jogging_control[1] == 1:
-			STATUS.set_jograte(float(self.jogging_control[5]))
-		self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-		self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
 
-#		jogging ANGULAR mode button pushed
+
 	def pb_f12s5_0_jog_angular_toggle(self,pressed):
-		self.w.pb_f12s5_0_jog_mode.setEnabled(True)
+		self.w.pb_f12s5_0_jog_continous.setEnabled(True)
+		self.w.pb_f12s5_0_jog_increment.setEnabled(True)
 		self.w.pb_f12s5_0_jog_pos_a.setEnabled(True)
 		self.w.pb_f12s5_0_jog_neg_a.setEnabled(True)
 		self.w.pb_f12s5_0_jog_pos_x.setEnabled(False)
@@ -1676,137 +1709,58 @@ class HandlerClass:
 		self.w.pb_f12s5_0_jog_neg_y.setEnabled(False)
 		self.w.pb_f12s5_0_jog_pos_z.setEnabled(False)
 		self.w.pb_f12s5_0_jog_neg_z.setEnabled(False)
-		self.w.pb_f12s7_3_jog_ang_stop_a.show()
 		if pressed:
-			self.jogging_control[0] = 3 # angular mode
+			self.jog_control[1] = 3 # angular mode
 			self.w.stackedWidget_6.setCurrentIndex(2)
-			self.w.stackedWidget_7.setCurrentIndex(0)
-			if self.jogging_control[8] == 0:
-				STATUS.set_jog_increment_angular(0,0)
-			if self.jogging_control[8] == 1:
-				self.w.stackedWidget_7.setCurrentIndex(3)
-				STATUS.set_jog_increment_angular(self.jogging_control[12],0)
-			if self.jogging_control[1] == 0:
-				STATUS.set_jograte_angular(float(self.jogging_control[6]))
-			if self.jogging_control[1] == 1:
-				STATUS.set_jograte_angular(float(self.jogging_control[7]))
 			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
 			self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte_angular()))
+			self.label_panel_labels()
 
-#		jogging slow rate button pushed
 	def pb_f12s5_0_jog_rate_slow_toggle(self,pressed):
-		self.jogging_control[1]=0
-		if pressed:
-			if self.jogging_control[0] == 1:
-				STATUS.set_jograte(float(self.jogging_control[2]))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
-			if self.jogging_control[0] == 2:
-				STATUS.set_jograte(float(self.jogging_control[4]))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
-			if self.jogging_control[0] == 3:
-				STATUS.set_jograte_angular(float(self.jogging_control[6]))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte_angular()))
+		self.jog_control[3]=1
 
-#		jogging fast rate button pushed
 	def pb_f12s5_0_jog_rate_fast_toggle(self,pressed):
-		self.jogging_control[1]=1
-		if pressed:
-			if self.jogging_control[0] == 1:
-				STATUS.set_jograte(float(self.jogging_control[3]))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
-			if self.jogging_control[0]== 2:
-				STATUS.set_jograte(float(self.jogging_control[5]))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
-			if self.jogging_control[0] == 3:
-#				STATUS.set_jograte_angular(self.jogging_control[7])
-				STATUS.set_jograte_angular(float(self.jogging_control[7]))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte_angular()))
+		self.jog_control[3]=2
 
-#		jogging continuous or increment selection button
-	def pb_f12s5_0_jog_mode_toggle(self,pressed):
+	def pb_f12s5_0_jog_continous_toggle(self,pressed):
 		if pressed:
-			self.jogging_control[8]=1
-			if self.jogging_control[0] == 1:
-				STATUS.set_jog_increments(0,0)
-				self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-			if self.jogging_control[0] == 2:
-				STATUS.set_jog_increments(self.jogging_control[9],0)
-				self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-				self.w.stackedWidget_7.setCurrentIndex(2)
-			if self.jogging_control[0] == 3:
-				STATUS.set_jog_increment_angular(self.jogging_control[12],0)
-				self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
-				self.w.stackedWidget_7.setCurrentIndex(3)
-		else:
-			self.jogging_control[8]=0 # set to continuous jogging mode
-			STATUS.set_jog_increments(0,0)
-			STATUS.set_jog_increment_angular(0,0)
-			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-			self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
-			self.w.stackedWidget_7.setCurrentIndex(0)
-			self.w.pb_f12s7_2_jog_lin_stop_all.hide()
-			self.w.pb_f12s7_2_jog_lin_stop_x.hide()
-			self.w.pb_f12s7_2_jog_lin_stop_y.hide()
-			self.w.pb_f12s7_2_jog_lin_stop_z.hide()
-			self.w.pb_f12s7_3_jog_ang_stop_a.hide()
+			self.jog_control[2] = 1 # set to continuous jogging mode
 
-#		Jogging - position slow jog rate change
+	def pb_f12s5_0_jog_increment_toggle(self,pressed):
+		if pressed:
+			self.jog_control[2] = 2 # set to increment jogging mode
+
+
 	def scrb_f12s6_1_jog_position_slow_setValue(self,value):
 		self.w.lab_f12s6_1_jog_position_slow.setText(str(value))
-		if self.jogging_control[0] == 1: # position jog
-			self.jogging_control[2] = value
-			if self.jogging_control[1] == 0: # slow is jog selected
-				STATUS.set_jograte(float(value))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+		if self.jog_control[1] == 1: # position jog
+			self.jog_rates[3] = value
 
-#		Jogging - position fast jog rate change
 	def scrb_f12s6_1_jog_position_fast_setValue(self,value):
 		self.w.lab_f12s6_1_jog_position_fast.setText(str(value))
-		if self.jogging_control[0] == 1: # position jog
-			self.jogging_control[3] = value
-			if self.jogging_control[1] == 1: # fast is jog selected
-				STATUS.set_jograte(float(value))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+		if self.jog_control[1] == 1: # position jog
+			self.jog_rates[4] = value
 
-#		Jogging linear slow jog rate change
-	# change linear jog rate slow value
 	def scrb_f12s6_0_jog_linear_slow_setValue(self,value):
 		self.w.lab_f12s6_0_jog_linear_slow.setText(str(value))
-		if self.jogging_control[0] == 2: # linear jog
-			self.jogging_control[4] = value
-			if self.jogging_control[1] == 0: # slow is jog selected
-				STATUS.set_jograte(float(value))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+		if self.jog_control[1] == 2: # linear jog
+			self.jog_rates[5] = value
 
-#		Jogging linear fast jog rate change
 	def scrb_f12s6_0_jog_linear_fast_setValue(self,value):
 		self.w.lab_f12s6_0_jog_linear_fast.setText(str(value))
-		if self.jogging_control[0] == 2: # linear jog
-			self.jogging_control[5] = value
-			if self.jogging_control[1] == 1: # fast jog is selected
-				STATUS.set_jograte(float(value))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+		if self.jog_control[1] == 2: # linear jog
+			self.jog_rates[6] = value
 
-#		Jogging - angular slow jog rate change
-	# change angular jog rate slow value
 	def scrb_f12s6_2_jog_angular_slow_setValue(self,value):
 		self.w.lab_f12s6_2_jog_angular_slow.setText(str(value))
-		if self.jogging_control[0] == 3: # angular jog
-			self.jogging_control[6] = value
-			if self.jogging_control[1] == 0: # slow jog is selected
-				STATUS.set_jograte_angular(float(value))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte_angular()))
+		if self.jog_control[1] == 3: # angular jog
+			self.jog_rates[7] = value
 
-#		Jogging angular fast jog rate change
 	def scrb_f12s6_2_jog_angular_fast_setValue(self,value):
 		self.w.lab_f12s6_2_jog_angular_fast.setText(str(value))
-		if self.jogging_control[0] == 3:
-			self.jogging_control[7] = value
-			if self.jogging_control[1] == 1: # fast jog is selected
-				STATUS.set_jograte_angular(float(value))
-				self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte_angular()))
+		if self.jog_control[1] == 3:
+			self.jog_rates[8] = value
 
-#		jogging position preset commands - the commands have to be listed in the ini file
 	def pb_f12s6_1_jog_position_0_pressed(self):
 		self.position_cmds(btn=0)
 	def pb_f12s6_1_jog_position_1_pressed(self):
@@ -1826,185 +1780,141 @@ class HandlerClass:
 
 	def position_cmds(self,btn):
 		self.c.mode(linuxcnc.MODE_MDI)
-		self.c.wait_complete()
 		self.c.mdi(str(self.jogging_position_cmds[btn][1]))
-		self.jogging_control[14] = 1 # position mdi mode move in progress
+		self.jog_control[10] = 1 # position mdi cmd mode change
 
-#		linear jogging buttons - these handle the increments as listed in the ini file
+
 	def pb_f12s6_0_jog_linear_0_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[0]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 0)
 	def pb_f12s6_0_jog_linear_1_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[1]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 1)
 	def pb_f12s6_0_jog_linear_2_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[2]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 2)
 	def pb_f12s6_0_jog_linear_3_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[3]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 3)
 	def pb_f12s6_0_jog_linear_4_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[4]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 4)
 	def pb_f12s6_0_jog_linear_5_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[5]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 5)
 	def pb_f12s6_0_jog_linear_6_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[6]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 6)
 	def pb_f12s6_0_jog_linear_7_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[7]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 7)
 	def pb_f12s6_0_jog_linear_8_pressed(self):
-		self.jogging_control[9]= self.active_lin_incr_list[8]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 8)
 	def pb_f12s6_0_jog_linear_9_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[9]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 9)
 	def pb_f12s6_0_jog_linear_10_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[10]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 10)
 	def pb_f12s6_0_jog_linear_11_pressed(self):
-		self.jogging_control[9]= self.active_lin_incr_list[11]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 11)
 	def pb_f12s6_0_jog_linear_12_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[12]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 12)
 	def pb_f12s6_0_jog_linear_13_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[13]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 13)
 	def pb_f12s6_0_jog_linear_14_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[14]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 14)
 	def pb_f12s6_0_jog_linear_15_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[15]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 15)
 	def pb_f12s6_0_jog_linear_16_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[16]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 16)
 	def pb_f12s6_0_jog_linear_17_pressed(self):
-		self.jogging_control[9]= self.active_lin_incr_list[17]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 17)
 	def pb_f12s6_0_jog_linear_18_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[18]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 18)
 	def pb_f12s6_0_jog_linear_19_pressed(self):
-		self.jogging_control[9] = self.active_lin_incr_list[19]
-		self.set_new_lin_incr()
+		self.new_linear_incr(index = 19)
 
-	def set_new_lin_incr(self):
-		if self.jogging_control[8] == 1: # increment jogging mode
-			if self.machine_control[2] == 0:
-				STATUS.set_jog_increments((self.jogging_control[9]),0)
-			if self.machine_control[2] == 1:
-				STATUS.set_jog_increments((self.jogging_control[9]*25.4),0)
-			if self.machine_control[2] == 2:
-				STATUS.set_jog_increments((self.jogging_control[9]/25.4),0)
-			self.w.lab_f12s5_0_jog_incr.setText('%.6s' %(str(STATUS.get_jog_increment())))
+	def new_linear_incr(self,index):
+		if self.jog_control[1] == 2:	 		# linear jogging mode
+			if self.jog_control[6] == 1: 		# inch
+				self.jog_control[7] = index
+				self.jog_rates[0] =  self.inch_increments[index]
+				self.w.lab_f12s5_0_jog_incr.setText(str(self.jog_rates[0]))
+			if self.jog_control[6] == 2: 		# metric
+				self.jog_control[8] = index
+				self.jog_rates[1] = self.metric_increments[index]
+				self.w.lab_f12s5_0_jog_incr.setText(str(self.jog_rates[1]))
 
-#		angular jogging buttons - these handle the increments as listed in the ini file
+
 	def pb_f12s6_2_jog_angular_0_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[0])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 0)
 	def pb_f12s6_2_jog_angular_1_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[1])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 1)
 	def pb_f12s6_2_jog_angular_2_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[2])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 2)
 	def pb_f12s6_2_jog_angular_3_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[3])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 3)
 	def pb_f12s6_2_jog_angular_4_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[4])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 4)
 	def pb_f12s6_2_jog_angular_5_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[5])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 5)
 	def pb_f12s6_2_jog_angular_6_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[6])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 6)
 	def pb_f12s6_2_jog_angular_7_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[7])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 7)
 	def pb_f12s6_2_jog_angular_8_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[8])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 8)
 	def pb_f12s6_2_jog_angular_9_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[9])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 9)
 	def pb_f12s6_2_jog_angular_10_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[10])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 10)
 	def pb_f12s6_2_jog_angular_11_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[11])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 11)
 	def pb_f12s6_2_jog_angular_12_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[12])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 12)
 	def pb_f12s6_2_jog_angular_13_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[13])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 13)
 	def pb_f12s6_2_jog_angular_14_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[14])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 14)
 	def pb_f12s6_2_jog_angular_15_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[15])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 15)
 	def pb_f12s6_2_jog_angular_16_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[16])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 16)
 	def pb_f12s6_2_jog_angular_17_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[17])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 17)
 	def pb_f12s6_2_jog_angular_18_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[18])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 18)
 	def pb_f12s6_2_jog_angular_19_pressed(self):
-		self.jogging_control[12]=float(self.active_angular_incr_list[19])
-		self.set_new_ang_incr()
+		self.new_angular_incr(index = 19)
 
-	def set_new_ang_incr(self):
-		if self.jogging_control[8] == 1: # increment jogging mode
-			STATUS.set_jog_increment_angular((self.jogging_control[12]),0)
-			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
+	def new_angular_incr(self,index):
+		if self.jog_control[1] == 3:	# angular jogging mode
+			self.jog_control[9] = index
+			self.jog_rates[2] = self.angular_increments[index]
+			self.w.lab_f12s5_0_jog_incr.setText(str(self.jog_rates[2]))
 
-#		Jogging scrowl bars, set value lables and also incr and rate labels for display
-		# linear
-	def scrb_f12s6_0_jog_linear_slow_setRange(self):
-		print ''
-	def scrb_f12s6_0_jog_linear_fast_setRange(self):
-		print ''
-	def lab_f12s6_0_jog_linear_slow_setText(self):
-		print ''
-	def lab_f12s6_0_jog_linear_fast_setText(self):
-		print ''
 
-		# position
 	def scrb_f12s6_1_jog_position_slow_setRange(self):
-		print ''
+		place_holder=0
 	def scrb_f12s6_1_jog_position_fast_setRange(self):
-		print ''
+		place_holder=0
 	def lab_f12s6_1_jog_position_slow_setText(self):
-		print ''
+		place_holder=0
 	def lab_f12s6_1_jog_position_fast_setText(self):
-		print ''
-
-		# angular
+		place_holder=0
+	def scrb_f12s6_0_jog_linear_slow_setRange(self):
+		place_holder=0
+	def scrb_f12s6_0_jog_linear_fast_setRange(self):
+		place_holder=0
+	def lab_f12s6_0_jog_linear_slow_setText(self):
+		place_holder=0
+	def lab_f12s6_0_jog_linear_fast_setText(self):
+		place_holder=0
 	def scrb_f12s6_2_jog_angular_slow_setRange(self):
-		print ''
+		place_holder=0
 	def scrb_f12s6_2_jog_angular_fast_setRange(self):
-		print ''
+		place_holder=0
 	def lab_f12s6_2_jog_angular_slow_setText(self):
-		print ''
+		place_holder=0
 	def lab_f12s6_2_jog_angular_fast_setText(self):
-		print ''
+		place_holder=0
 
 		# displayed
 	def lab_f12s5_0_jog_rate_setText(self):
-		print ''
+		place_holder=0
 	def lab_f12s5_0_jog_incr_setText(self):
-		print ''
+		place_holder=0
 
 # 		end of jogging section
 
@@ -2086,7 +1996,7 @@ class HandlerClass:
 
 # F10_1	Homing panel
 	def pb_f10sw3_1_home_xyz_toggle(self):
-		self.machine_control[3] = 1
+		self.machine_info[3] = 1
 
 	def pb_f10sw3_1_home_x_toggle(self):
 		self.c.home(0)
@@ -2104,12 +2014,8 @@ class HandlerClass:
 		self.c.home(3)
 		self.c.wait_complete()
 
-	def pb_f10sw3_1_home_spare_toggle(self):
-		data = range(9)
-		data[0:] = [','] * 9
-		data = self.s.homed
-		print 'data:',data
-		print data[2]
+	def pb_f10sw3_1_unhome_all_toggle(self):
+		self.c.unhome(-1)
 
 # F11   status panel
 	def lab_f11s4_0_mcode_list_setText(self):
@@ -2264,9 +2170,6 @@ class HandlerClass:
 	def stackedWidget_6_currentChanged(self,index):
 		print 'SW_6_index changed',index
 
-	# sw7 inside f12 - handles jog and jog position stop buttons
-	def stackedWidget_7_currentChanged(self,index):
-		print 'SW_7_index changed',index
 
 # 		end of gui specific items
 # -------------------------------------------------------------
