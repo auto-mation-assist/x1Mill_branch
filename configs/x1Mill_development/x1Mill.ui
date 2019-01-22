@@ -4057,7 +4057,7 @@ SCOPE</string>
            <widget class="QLabel" name="plab_f8_y">
             <property name="geometry">
              <rect>
-              <x>0</x>
+              <x>3</x>
               <y>0</y>
               <width>50</width>
               <height>57</height>
@@ -4077,7 +4077,7 @@ SCOPE</string>
             </property>
             <property name="font">
              <font>
-              <pointsize>24</pointsize>
+              <pointsize>22</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -4141,7 +4141,7 @@ SCOPE</string>
            <widget class="QLabel" name="plab_f8_a">
             <property name="geometry">
              <rect>
-              <x>0</x>
+              <x>3</x>
               <y>0</y>
               <width>50</width>
               <height>57</height>
@@ -4161,7 +4161,7 @@ SCOPE</string>
             </property>
             <property name="font">
              <font>
-              <pointsize>24</pointsize>
+              <pointsize>22</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -4227,7 +4227,7 @@ SCOPE</string>
            <widget class="QLabel" name="plab_f8_x">
             <property name="geometry">
              <rect>
-              <x>0</x>
+              <x>3</x>
               <y>0</y>
               <width>50</width>
               <height>57</height>
@@ -4247,7 +4247,7 @@ SCOPE</string>
             </property>
             <property name="font">
              <font>
-              <pointsize>24</pointsize>
+              <pointsize>22</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -4311,7 +4311,7 @@ SCOPE</string>
            <widget class="QLabel" name="plab_f8_z">
             <property name="geometry">
              <rect>
-              <x>0</x>
+              <x>3</x>
               <y>0</y>
               <width>50</width>
               <height>57</height>
@@ -4331,7 +4331,7 @@ SCOPE</string>
             </property>
             <property name="font">
              <font>
-              <pointsize>24</pointsize>
+              <pointsize>22</pointsize>
              </font>
             </property>
             <property name="layoutDirection">
@@ -4923,7 +4923,7 @@ Rides</string>
             </rect>
            </property>
            <property name="currentIndex">
-            <number>3</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="f6s2_0_spindle_1">
             <widget class="QFrame" name="spindle_1_panel">
@@ -6901,21 +6901,21 @@ Jog Ovr</string>
           <widget class="PushButton" name="pb_f7_dro_units">
            <property name="geometry">
             <rect>
-             <x>8</x>
-             <y>134</y>
-             <width>45</width>
-             <height>42</height>
+             <x>6</x>
+             <y>114</y>
+             <width>50</width>
+             <height>35</height>
             </rect>
            </property>
            <property name="minimumSize">
             <size>
-             <width>45</width>
-             <height>42</height>
+             <width>50</width>
+             <height>34</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>45</width>
+             <width>50</width>
              <height>42</height>
             </size>
            </property>
@@ -6950,46 +6950,61 @@ Jog Ovr</string>
             <string>INCH</string>
            </property>
           </widget>
-          <widget class="PushButton" name="pb_f7_dro_spare">
+          <widget class="PushButton" name="pb_f7_dro_norm_diam">
            <property name="geometry">
             <rect>
-             <x>8</x>
-             <y>178</y>
-             <width>45</width>
-             <height>42</height>
+             <x>6</x>
+             <y>151</y>
+             <width>50</width>
+             <height>35</height>
             </rect>
            </property>
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>34</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>42</height>
+            </size>
+           </property>
            <property name="text">
-            <string>SPARE</string>
+            <string>NORM</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
            </property>
+           <property name="checked_state_text_option" stdset="0">
+            <bool>true</bool>
+           </property>
            <property name="true_state_string" stdset="0">
-            <string>Spare</string>
+            <string>DIAM</string>
            </property>
            <property name="false_state_string" stdset="0">
-            <string>SPARE</string>
+            <string>NORM</string>
            </property>
           </widget>
           <widget class="PushButton" name="pb_f7_dro_abs">
            <property name="geometry">
             <rect>
-             <x>8</x>
-             <y>4</y>
-             <width>45</width>
-             <height>42</height>
+             <x>6</x>
+             <y>3</y>
+             <width>50</width>
+             <height>35</height>
             </rect>
            </property>
            <property name="minimumSize">
             <size>
-             <width>45</width>
-             <height>42</height>
+             <width>50</width>
+             <height>34</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>45</width>
+             <width>50</width>
              <height>42</height>
             </size>
            </property>
@@ -7030,21 +7045,21 @@ Jog Ovr</string>
           <widget class="PushButton" name="pb_f7_dro_dtg">
            <property name="geometry">
             <rect>
-             <x>8</x>
-             <y>46</y>
-             <width>45</width>
-             <height>42</height>
+             <x>6</x>
+             <y>40</y>
+             <width>50</width>
+             <height>35</height>
             </rect>
            </property>
            <property name="minimumSize">
             <size>
-             <width>45</width>
-             <height>42</height>
+             <width>50</width>
+             <height>34</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>45</width>
+             <width>50</width>
              <height>42</height>
             </size>
            </property>
@@ -7085,21 +7100,21 @@ Jog Ovr</string>
           <widget class="PushButton" name="pb_f7_dro_rel">
            <property name="geometry">
             <rect>
-             <x>8</x>
-             <y>90</y>
-             <width>45</width>
-             <height>42</height>
+             <x>6</x>
+             <y>77</y>
+             <width>50</width>
+             <height>35</height>
             </rect>
            </property>
            <property name="minimumSize">
             <size>
-             <width>45</width>
-             <height>42</height>
+             <width>50</width>
+             <height>34</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>45</width>
+             <width>50</width>
              <height>42</height>
             </size>
            </property>
@@ -7135,6 +7150,46 @@ Jog Ovr</string>
            </property>
            <property name="false_state_string" stdset="0">
             <string/>
+           </property>
+          </widget>
+          <widget class="PushButton" name="pb_f7_dro_current_pos">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="geometry">
+            <rect>
+             <x>6</x>
+             <y>188</y>
+             <width>50</width>
+             <height>35</height>
+            </rect>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>34</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>42</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>CURR</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked_state_text_option" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="true_state_string" stdset="0">
+            <string>DIAM</string>
+           </property>
+           <property name="false_state_string" stdset="0">
+            <string>NORM</string>
            </property>
           </widget>
          </widget>
@@ -7570,8 +7625,8 @@ Jog Ovr</string>
          <widget class="QFrame" name="frame_graphics_btns">
           <property name="geometry">
            <rect>
-            <x>-1</x>
-            <y>-2</y>
+            <x>0</x>
+            <y>0</y>
             <width>60</width>
             <height>400</height>
            </rect>
@@ -7597,7 +7652,7 @@ Jog Ovr</string>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <widget class="PushButton" name="pb_f10sw3_0_graph_spare">
+          <widget class="PushButton" name="pb_f10sw3_0_graph_inch_mm">
            <property name="geometry">
             <rect>
              <x>6</x>
@@ -7612,10 +7667,19 @@ Jog Ovr</string>
             </font>
            </property>
            <property name="text">
-            <string>SPARE</string>
+            <string>INCH</string>
            </property>
            <property name="checkable">
             <bool>true</bool>
+           </property>
+           <property name="checked_state_text_option" stdset="0">
+            <bool>true</bool>
+           </property>
+           <property name="true_state_string" stdset="0">
+            <string>MM</string>
+           </property>
+           <property name="false_state_string" stdset="0">
+            <string>INCH</string>
            </property>
           </widget>
           <widget class="PushButton" name="pb_f10sw3_0_graph_dro">
@@ -7845,34 +7909,22 @@ In</string>
           <property name="geometry">
            <rect>
             <x>60</x>
-            <y>2</y>
-            <width>535</width>
-            <height>393</height>
-           </rect>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>350</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
+            <y>0</y>
             <width>540</width>
             <height>400</height>
-           </size>
+           </rect>
           </property>
           <property name="_dro" stdset="0">
-           <bool>true</bool>
-          </property>
-          <property name="overlay" stdset="0">
            <bool>false</bool>
           </property>
+          <property name="overlay" stdset="0">
+           <bool>true</bool>
+          </property>
           <property name="background_color" stdset="0">
-           <color alpha="0">
-            <red>0</red>
-            <green>0</green>
-            <blue>0</blue>
+           <color alpha="61">
+            <red>206</red>
+            <green>215</green>
+            <blue>223</blue>
            </color>
           </property>
          </widget>
@@ -7898,7 +7950,7 @@ In</string>
           <property name="geometry">
            <rect>
             <x>48</x>
-            <y>344</y>
+            <y>347</y>
             <width>503</width>
             <height>44</height>
            </rect>
@@ -7991,6 +8043,39 @@ X</string>
            <property name="text">
             <string>HOME
 Z</string>
+           </property>
+          </widget>
+         </widget>
+         <widget class="QFrame" name="homing_graph">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>6</y>
+            <width>540</width>
+            <height>336</height>
+           </rect>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::WinPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="GCodeGraphics" name="gcodegraphics_2">
+           <property name="geometry">
+            <rect>
+             <x>2</x>
+             <y>2</y>
+             <width>536</width>
+             <height>332</height>
+            </rect>
+           </property>
+           <property name="background_color" stdset="0">
+            <color alpha="150">
+             <red>21</red>
+             <green>11</green>
+             <blue>11</blue>
+            </color>
            </property>
           </widget>
          </widget>
@@ -8335,8 +8420,8 @@ Z</string>
      <widget class="LED" name="led_f2_estop">
       <property name="geometry">
        <rect>
-        <x>47</x>
-        <y>34</y>
+        <x>8</x>
+        <y>26</y>
         <width>12</width>
         <height>12</height>
        </rect>
@@ -8362,8 +8447,8 @@ Z</string>
      <widget class="LED" name="led_f2_in_limits">
       <property name="geometry">
        <rect>
-        <x>47</x>
-        <y>55</y>
+        <x>8</x>
+        <y>46</y>
         <width>12</width>
         <height>12</height>
        </rect>
@@ -8389,8 +8474,8 @@ Z</string>
      <widget class="LED" name="led_f2_spindle_0_rpm_error">
       <property name="geometry">
        <rect>
-        <x>47</x>
-        <y>75</y>
+        <x>8</x>
+        <y>74</y>
         <width>12</width>
         <height>12</height>
        </rect>
@@ -8420,8 +8505,8 @@ Z</string>
      <widget class="LED" name="led_f2_spindle_1_rpm_error">
       <property name="geometry">
        <rect>
-        <x>47</x>
-        <y>96</y>
+        <x>8</x>
+        <y>94</y>
         <width>12</width>
         <height>12</height>
        </rect>
@@ -8448,8 +8533,8 @@ Z</string>
      <widget class="LED" name="led_f2_probe_check">
       <property name="geometry">
        <rect>
-        <x>47</x>
-        <y>125</y>
+        <x>8</x>
+        <y>126</y>
         <width>12</width>
         <height>12</height>
        </rect>
@@ -8476,7 +8561,7 @@ Z</string>
      <widget class="LED" name="led_f2_mdi">
       <property name="geometry">
        <rect>
-        <x>47</x>
+        <x>8</x>
         <y>146</y>
         <width>12</width>
         <height>12</height>
@@ -8504,8 +8589,8 @@ Z</string>
      <widget class="QLabel" name="plab_f2_estop_label">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>31</y>
+        <x>24</x>
+        <y>24</y>
         <width>36</width>
         <height>16</height>
        </rect>
@@ -8525,8 +8610,8 @@ Z</string>
      <widget class="QLabel" name="plab_f2_limits_label">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>52</y>
+        <x>24</x>
+        <y>44</y>
         <width>36</width>
         <height>16</height>
        </rect>
@@ -8546,8 +8631,8 @@ Z</string>
      <widget class="QLabel" name="plab_f2_spindle_0_label">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>73</y>
+        <x>24</x>
+        <y>72</y>
         <width>36</width>
         <height>16</height>
        </rect>
@@ -8567,8 +8652,8 @@ Z</string>
      <widget class="QLabel" name="plab_f2_spindle_1_label">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>93</y>
+        <x>24</x>
+        <y>92</y>
         <width>36</width>
         <height>16</height>
        </rect>
@@ -8588,8 +8673,8 @@ Z</string>
      <widget class="QLabel" name="plab_f2_probe_label">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>122</y>
+        <x>24</x>
+        <y>124</y>
         <width>36</width>
         <height>16</height>
        </rect>
@@ -8609,8 +8694,8 @@ Z</string>
      <widget class="QLabel" name="plab_f2_mdi">
       <property name="geometry">
        <rect>
-        <x>4</x>
-        <y>143</y>
+        <x>24</x>
+        <y>144</y>
         <width>36</width>
         <height>16</height>
        </rect>
@@ -8630,7 +8715,7 @@ Z</string>
      <widget class="QLabel" name="plab_f2_power_label">
       <property name="geometry">
        <rect>
-        <x>4</x>
+        <x>24</x>
         <y>4</y>
         <width>36</width>
         <height>16</height>
@@ -8651,8 +8736,8 @@ Z</string>
      <widget class="LED" name="led_f2_power_on">
       <property name="geometry">
        <rect>
-        <x>47</x>
-        <y>7</y>
+        <x>8</x>
+        <y>6</y>
         <width>12</width>
         <height>12</height>
        </rect>
@@ -8702,7 +8787,7 @@ Z</string>
       <property name="geometry">
        <rect>
         <x>3</x>
-        <y>3</y>
+        <y>46</y>
         <width>63</width>
         <height>41</height>
        </rect>
@@ -8730,7 +8815,7 @@ Z</string>
       <property name="geometry">
        <rect>
         <x>3</x>
-        <y>46</y>
+        <y>3</y>
         <width>63</width>
         <height>41</height>
        </rect>
@@ -11988,8 +12073,8 @@ Z</string>
    <slot>pb_f7_dro_abs_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>0</x>
-     <y>0</y>
+     <x>384</x>
+     <y>473</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12004,8 +12089,8 @@ Z</string>
    <slot>pb_f7_dro_dtg_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>0</x>
-     <y>0</y>
+     <x>384</x>
+     <y>510</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12020,8 +12105,8 @@ Z</string>
    <slot>pb_f7_dro_rel_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>0</x>
-     <y>0</y>
+     <x>384</x>
+     <y>547</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12030,14 +12115,14 @@ Z</string>
    </hints>
   </connection>
   <connection>
-   <sender>pb_f7_dro_spare</sender>
+   <sender>pb_f7_dro_norm_diam</sender>
    <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>pb_f7_dro_spare_toggle()</slot>
+   <slot>pb_f7_dro_norm_diam_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>0</x>
-     <y>0</y>
+     <x>384</x>
+     <y>621</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12334,14 +12419,14 @@ Z</string>
    </hints>
   </connection>
   <connection>
-   <sender>pb_f10sw3_0_graph_spare</sender>
+   <sender>pb_f10sw3_0_graph_inch_mm</sender>
    <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
-   <slot>pb_f10sw3_0_graph_spare_toggle()</slot>
+   <slot>pb_f10sw3_0_graph_inch_mm_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>5</y>
+     <x>9</x>
+     <y>7</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12356,8 +12441,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_dro_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>44</y>
+     <x>9</x>
+     <y>46</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12372,8 +12457,8 @@ Z</string>
    <slot>pb_f10sw3_0_zoom_out_pressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>83</y>
+     <x>9</x>
+     <y>85</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12388,8 +12473,8 @@ Z</string>
    <slot>pb_f10sw3_0_zoom_in_pressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>122</y>
+     <x>9</x>
+     <y>124</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12404,8 +12489,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_x_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>161</y>
+     <x>9</x>
+     <y>163</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12420,8 +12505,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_y_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>200</y>
+     <x>9</x>
+     <y>202</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12436,8 +12521,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_z_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>239</y>
+     <x>9</x>
+     <y>241</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12452,8 +12537,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_z2_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>278</y>
+     <x>9</x>
+     <y>280</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12468,8 +12553,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_p_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>317</y>
+     <x>9</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -12484,8 +12569,8 @@ Z</string>
    <slot>pb_f10sw3_0_graph_clear_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>7</x>
-     <y>356</y>
+     <x>9</x>
+     <y>358</y>
     </hint>
     <hint type="destinationlabel">
      <x>0</x>
@@ -13092,12 +13177,28 @@ Z</string>
    <slot>pb_f7_dro_units_toggle()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>419</x>
-     <y>620</y>
+     <x>417</x>
+     <y>600</y>
     </hint>
     <hint type="destinationlabel">
      <x>421</x>
      <y>619</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_f7_dro_current_pos</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>pb_f7_dro_current_pos_toggle()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>421</x>
+     <y>676</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>423</x>
+     <y>676</y>
     </hint>
    </hints>
   </connection>
@@ -13210,7 +13311,8 @@ Z</string>
   <slot>pb_f7_dro_dtg_toggle()</slot>
   <slot>pb_f7_dro_rel_toggle()</slot>
   <slot>pb_f7_dro_units_toggle()</slot>
-  <slot>pb_f7_dro_spare_toggle()</slot>
+  <slot>pb_f7_dro_norm_diam_toggle()</slot>
+  <slot>pb_f7_dro_current_pos_toggle()</slot>
   <slot>dro_f8_display_x_setText()</slot>
   <slot>dro_f8_display_y_setText()</slot>
   <slot>dro_f8_display_z_setText()</slot>
@@ -13228,7 +13330,7 @@ Z</string>
   <slot>pbar_f9_spindle_0_rpm_setMaximum()</slot>
   <slot>pbar_f9_spindle_0_rpm_setValue()</slot>
   <slot>lab_f9_spindle_0_rpm_setText()</slot>
-  <slot>pb_f10sw3_0_graph_spare_toggle()</slot>
+  <slot>pb_f10sw3_0_graph_inch_mm_toggle()</slot>
   <slot>pb_f10sw3_0_graph_dro_toggle()</slot>
   <slot>pb_f10sw3_0_zoom_out_pressed()</slot>
   <slot>pb_f10sw3_0_zoom_in_pressed()</slot>

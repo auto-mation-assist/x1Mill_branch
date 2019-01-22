@@ -27,7 +27,15 @@
 
 
 # >>>> indents are: Tab 3 <<<< #
-# ============================ #
+
+# ======================================================================== #
+# The x1Mill gui uses an expanded .ini file so this
+# must be in the display section of the x1mill.ini file.
+# 	[DISPLAY]
+# 	DISPLAY = qtvcp -d x1Mill
+# 	#INCLUDE x1Mill_pref.inc
+# It must have '#INCLUDE' and the added parameter file, 'x1Mill_pref.inc')
+# ======================================================================== #
 
 # machine related variables - values are -1 untill updated
 # -------------------------------------------------------------------------
@@ -88,10 +96,10 @@ from qtvcp.widgets.tool_offsetview import ToolOffsetView as TOOLVIEW_WIDGET
 from qtvcp.widgets.dialog_widget import CamViewDialog as CAMVIEW
 from qtvcp.widgets.dialog_widget import MacroTabDialog as LATHEMACRO
 from qtvcp.widgets.mdi_line import MDILine as MDI_WIDGET
-#####from qtvcp.widgets.gcode_editor import GcodeEditor as GCODE
+from qtvcp.widgets.gcode_editor import GcodeEditor as GCODE
 from qtvcp.lib.keybindings import Keylookup
 from qtvcp.lib.notify import Notify
-from qtvcp.core import Status, Action
+from qtvcp.core import Status #######, Action
 from qtvcp import logger
 
 import linuxcnc
@@ -110,65 +118,66 @@ from subprocess import Popen, PIPE
 from os.path import abspath, dirname, join
 
 TCLPATH = os.environ['LINUXCNC_TCL_DIR'] # set up paths for external programs support
-STATUS = Status()
-ACTION = Action()
+GSTAT = Status()
+#ACTION = Action()
 LOG = logger.getLogger(__name__)
 LOG.setLevel(logger.INFO) # One of DEBUG, INFO, WARNING, ERROR, CRITICAL
 #DEBUG = 0x7FFFFFFF
 DEBUG = 0
 
 # 	  for reading my own perferences file
-cp1 = ConfigParser.RawConfigParser
-class x1m_preferences(cp1):
-	types = {
-	   bool: cp1.getboolean,
-	    float: cp1.getfloat,
-	     int: cp1.getint,
-	     str: cp1.get,
-	     repr: lambda self, section, option: eval(cp1.get(self, section, option)),
-	}
+#cp1 = ConfigParser.RawConfigParser
+#class x1m_preferences(cp1):
+#	types = {
+#	   bool: cp1.getboolean,
+#	    float: cp1.getfloat,
+#	     int: cp1.getint,
+#	     str: cp1.get,
+#	     repr: lambda self, section, option: eval(cp1.get(self, section, option)),
+#	}
+#
+#	def __init__(self, path = None):
+#		cp1.__init__(self)
+#		if not path:
+#			path = '~/.toolch_preferences'  # <<<=====  Will need to change this
+#		self.fn = os.path.expanduser(path)
+#		self.read(self.fn)
 
-	def __init__(self, path = None):
-		cp1.__init__(self)
-		if not path:
-			path = '~/.toolch_preferences'  # <<<=====  Will need to change this
-		self.fn = os.path.expanduser(path)
-		self.read(self.fn)
-
-	def getpref(self, option, default = False, type = bool):
-		m = self.types.get(type)
-		try:
-			o = m(self, 'DEFAULT', option)
-		except Exception, detail:
-			print detail
-			self.set('DEFAULT', option, default)
-			self.write(open(self.fn, 'w'))
-			if type in(bool, float, int):
-				o = type(default)
-			else:
-				o = default
-		return o
-
-	def putpref(self, option, value, type = bool):
-		self.set('DEFAULT', option, type(value))
-		self.write(open(self.fn, 'w'))
+#	def getpref(self, option, default = False, type = bool):
+#		m = self.types.get(type)
+#		try:
+#			o = m(self, 'DEFAULT', option)
+#		except Exception, detail:
+#			print detail
+#			self.set('DEFAULT', option, default)
+#			self.write(open(self.fn, 'w'))
+#			if type in(bool, float, int):
+#				o = type(default)
+#			else:
+#				o = default
+#		return o
+#
+#	def putpref(self, option, value, type = bool):
+#		self.set('DEFAULT', option, type(value))
+#		self.write(open(self.fn, 'w'))
 
 # -------------------------------------------------------------------------
 class HandlerClass:
-	def __init__(self, halcomp,widgets,paths):
-		self.hal = halcomp
-		self.w   = widgets
-		self.s   = linuxcnc.stat()
-		self.c   = linuxcnc.command()
-		self.e   = linuxcnc.error_channel()
+	def __init__(self, halcomp, widgets, paths):
+		self.hal  = halcomp
+		self.w  = widgets
+		self.stat  = linuxcnc.stat()
+		self.c  = linuxcnc.command()
+		self.e  = linuxcnc.error_channel()
 
-		# connect to GStat to catch linuxcnc events
-		STATUS.connect('state-on', self.on_state_on)
-		STATUS.connect('state-off', self.on_state_off)
-		STATUS.connect('periodic', self.on_periodic)
+		# GSTAT = QTvcp STATUS to catch linuxcnc events. STATUS is defined in core.py
+		GSTAT.connect('state-on',  self.on_state_on)
+		GSTAT.connect('state-off', self.on_state_off)
+		GSTAT.connect('periodic',  self.on_periodic)
 
-		self.e = linuxcnc.error_channel()
-		self.s.poll()
+
+		# TODO see if all self.stat polls can be eliminated by using GSTAT
+		self.stat.poll()
 		self.e.poll()
 		self.init_control_lists()
 
@@ -177,28 +186,24 @@ class HandlerClass:
 		return 0
 
 	def init_control_lists(self):
-		self.machine_info = range(5)					# machine configuration info
+		self.machine_info = range(5)				# machine configuration info
 		self.machine_info[0:] = [-1] * 5
 		self.jog_control = range(11)				# jogging master control
 		self.jog_control[0:] = [0] * 11
-		self.jog_rates = range(9)						# jogging rate values
+		self.jog_rates = range(9)					# jogging step and rate values
 		self.jog_rates[0:] = [0] * 9
-		self.inch_increments = range(21)				# jogging increments master
+		self.inch_increments = range(21)			# jogging inch increments list
 		self.inch_increments[0:] = [0] * 21
-		self.metric_increments = range(21)				# jogging increments master
+		self.metric_increments = range(21)			# jogging metric increments list
 		self.metric_increments[0:] = [0] * 21
-		self.active_linear_increments = range(20)		# in use jogging increments
-		self.active_linear_increments[0:] = [-1] * 20
-		self.angular_increments = range(21)				# jogging increments
+		self.angular_increments = range(21)			# jogging angular increments list
 		self.angular_increments[0:] = [0] * 21
-		self.jog_linear_buttons	= range(21)				# jogging buttons and cmds
+		self.jog_linear_buttons	= range(21)			# jogging linear cmd strings to set button to true at init
 		self.jog_linear_buttons[0:]	= [-1] * 21
-		self.jog_angular_buttons = range(21)			# jogging buttons and cmds
+		self.jog_angular_buttons = range(21)		# jogging angular cmd strings to set button to true at init
 		self.jog_angular_buttons[0:] = [-1] * 21
 
-
-# 		make paths to my very own files
-	def initialized__(self):
+	def initialized__(self):						# make for sure path to x1mill configuration file
 		inipath = os.environ['INI_FILE_NAME']
 		print 'Using ini file:',inipath
 		self.inifile = ini(inipath)
@@ -207,16 +212,16 @@ class HandlerClass:
 			sys.exit()
 		prefname = self.inifile.find('DISPLAY', 'PREFERENCE_FILE_NAME')
 		dirname  = os.path.dirname(inipath)
-		self.pref_path = dirname + '/' + prefname
-		print 'Using our own preference file:', self.pref_path
-		self.prefs = x1m_preferences(self.pref_path)
+#		self.pref_path = dirname + '/' + prefname
+#		print 'Reading x1mill file:', self.pref_path
+#		self.prefs = PROBING(self.pref_path)
 
 		self.get_machine_info()
 		self.make_spindle_pins() # making our own hal pins - halcomp0
 		self.setup_jogging()
 		self.startup_disables()
 #		self.startup_hide()
-#		self.get_probing_values()  # from ini file
+		self.get_probing_defaults()  # from ini file
 #		self.get_tool_sensor_data()
 		self.slider_range_values()
 		self.build_jog_increments()
@@ -288,8 +293,8 @@ class HandlerClass:
 		            'pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a','pb_f5_spindle_1',
 		            'pb_f5_quick_zero','pb_f5_macro','pb_f5_overrides','pb_f5_dro',
 		            'pb_f7_dro_abs','pb_f7_dro_dtg','pb_f7_dro_rel','pb_f7_dro_units',
-		            'pb_f7_dro_spare','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
-		            'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_spare','pb_f10sw3_0_graph_x',
+		            'pb_f7_dro_current_pos','pb_f7_dro_norm_diam','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
+		            'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_inch_mm','pb_f10sw3_0_graph_x',
 		            'pb_f10sw3_0_graph_y','pb_f10sw3_0_graph_z','pb_f10sw3_0_graph_z2',
 		            'pb_f10sw3_0_graph_p','pb_f10sw3_0_graph_clear']
 		for num, btn in enumerate(startup_data, start=0):
@@ -332,8 +337,8 @@ class HandlerClass:
 		      'pb_f12s5_0_jog_pos_a','pb_f12s5_0_jog_neg_a','pb_f5_spindle_1',
 		      'pb_f5_quick_zero','pb_f5_macro','pb_f5_overrides','pb_f5_dro',
 		      'pb_f7_dro_abs','pb_f7_dro_dtg','pb_f7_dro_rel','pb_f7_dro_units',
-		      'pb_f7_dro_spare','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
-		      'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_spare','pb_f10sw3_0_graph_x',
+		      'pb_f7_dro_current_pos','pb_f7_dro_norm_diam','pb_f10sw3_0_zoom_out','pb_f10sw3_0_zoom_in',
+		      'pb_f10sw3_0_graph_dro','pb_f10sw3_0_graph_inch_mm','pb_f10sw3_0_graph_x',
 		      'pb_f10sw3_0_graph_y','pb_f10sw3_0_graph_z','pb_f10sw3_0_graph_z2',
 		      'pb_f10sw3_0_graph_p','pb_f10sw3_0_graph_clear']
 		for num, btn in enumerate(data, start=0):
@@ -423,47 +428,17 @@ class HandlerClass:
 	# Homing: 		 self.machine_info[3], homing all selected: 0 = False 1 = True
 	# jogging		 self.machine_info[4], jogging in progress: -1 = no 1 = Yes
 
-##### Start loading values from 'ini' file now #####
-
-# 		INI file >>> get and set default values for probing panel user inputs
-	def get_probing_values(self):
-		print 'setting probing values found in ini file'
-		pd = self.inifile.find('PROBING', 'PROBE_DIAM')
-		mt = self.inifile.find('PROBING', 'MAX_TRAVEL')
-		lr = self.inifile.find('PROBING', 'LATCH_RTRN_DIST')
-		sv = self.inifile.find('PROBING', 'SEARCH_VEL')
-		pv = self.inifile.find('PROBING', 'PROBE_VEL')
-		el = self.inifile.find('PROBING', 'EDGE_LENGHT')
-#		wh = self.inifile.find('PROBING', 'WORK_HEIGHT')
-#		ts = self.inifile.find('PROBING', 'TOOL_SENSE_HEIGHT')
-		xy = self.inifile.find('PROBING', 'XY_CLEARANCES')
-		zc = self.inifile.find('PROBING', 'Z_CLEARANCE')
-
-		# set default probing panel user input values
-		self.w.input_probe_diam.setText(pd)
-		self.w.input_max_travel.setText(mt)
-		self.w.input_latch_return_dist.setText(lr)
-		self.w.input_search_vel.setText(sv)
-		self.w.input_probe_vel.setText(pv)
-		self.w.input_side_edge_lenght.setText(el)
-#		self.w.input_tool_probe_height.setText(wh)
-#		self.w.input_tool_block_height.setText(ts)
-		self.w.input_xy_clearances.setText(xy)
-		self.w.input_z_clearance.setText(zc)
-
-# 		label jogging position command buttons, also commands and slider values
 	def get_jogging_position_cmds(self):
 		print 'getting jogging position cmd items'
-
 		jog_pos_cmds = range(8) # generate jogging position command list
-		jog_pos_cmds[0] = self.inifile.find('X1GUI', 'POSITION_CMD_0')
-		jog_pos_cmds[1] = self.inifile.find('X1GUI', 'POSITION_CMD_1')
-		jog_pos_cmds[2] = self.inifile.find('X1GUI', 'POSITION_CMD_2')
-		jog_pos_cmds[3] = self.inifile.find('X1GUI', 'POSITION_CMD_3')
-		jog_pos_cmds[4] = self.inifile.find('X1GUI', 'POSITION_CMD_4')
-		jog_pos_cmds[5] = self.inifile.find('X1GUI', 'POSITION_CMD_5')
-		jog_pos_cmds[6] = self.inifile.find('X1GUI', 'POSITION_CMD_6')
-		jog_pos_cmds[7] = self.inifile.find('X1GUI', 'POSITION_CMD_7')
+		jog_pos_cmds[0] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_0')
+		jog_pos_cmds[1] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_1')
+		jog_pos_cmds[2] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_2')
+		jog_pos_cmds[3] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_3')
+		jog_pos_cmds[4] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_4')
+		jog_pos_cmds[5] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_5')
+		jog_pos_cmds[6] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_6')
+		jog_pos_cmds[7] = self.inifile.find('POSITION_CMDS', 'POSITION_CMD_7')
 		cmd_list = [(i) for i in jog_pos_cmds]
 
 		jog_pos_cmds = range(8) # seperate name from the command
@@ -487,19 +462,19 @@ class HandlerClass:
 		self.w.pb_f12s6_1_jog_position_6.setText(jog_pos_cmds[6][0])
 		self.w.pb_f12s6_1_jog_position_7.setText(jog_pos_cmds[7][0])
 
-
-
 	def slider_range_values(self):
 		if self.jog_control[1] == 0:	# initialize
-			pos_max_rate = int(self.inifile.find('X1GUI', 'POSITION_MAX_RATE'))
-			lin_max_rate = int(self.inifile.find('X1GUI', 'LINEAR_MAX_RATE'))
-			ang_max_rate = int(self.inifile.find('X1GUI', 'ANGULAR_MAX_RATE'))
-			self.jog_rates[3] = self.inifile.find('X1GUI', 'POSITION_SLOW')
-			self.jog_rates[4] = self.inifile.find('X1GUI', 'POSITION_FAST')
-			self.jog_rates[5] = self.inifile.find('X1GUI', 'LINEAR_SLOW')
-			self.jog_rates[6] = self.inifile.find('X1GUI', 'LINEAR_FAST')
-			self.jog_rates[7] = self.inifile.find('X1GUI', 'ANGULAR_SLOW')
-			self.jog_rates[8] = self.inifile.find('X1GUI', 'ANGULAR_FAST')
+			pos_max_rate = int(self.inifile.find('POSITION_CMDS_RATES','POSITION_MAX_RATE'))
+			self.jog_rates[3] = self.inifile.find('POSITION_CMDS_RATES','POSITION_SLOW')
+			self.jog_rates[4] = self.inifile.find('POSITION_CMDS_RATES','POSITION_FAST')
+
+			lin_max_rate = int(self.inifile.find('LINEAR_RATES','LINEAR_MAX_RATE'))
+			self.jog_rates[5] = self.inifile.find('LINEAR_RATES','LINEAR_SLOW')
+			self.jog_rates[6] = self.inifile.find('LINEAR_RATES', 'LINEAR_FAST')
+
+			ang_max_rate = int(self.inifile.find('ANGULAR_RATES','ANGULAR_MAX_RATE'))
+			self.jog_rates[7] = self.inifile.find('ANGULAR_RATES','ANGULAR_SLOW')
+			self.jog_rates[8] = self.inifile.find('ANGULAR_RATES','ANGULAR_FAST')
 
 			self.w.scrb_f12s6_1_jog_position_slow.setRange(1,pos_max_rate)
 			self.w.scrb_f12s6_1_jog_position_fast.setRange(1,pos_max_rate)
@@ -522,30 +497,25 @@ class HandlerClass:
 			self.w.scrb_f12s6_2_jog_angular_fast.setValue(int(self.jog_rates[8]))
 			self.w.lab_f12s6_2_jog_angular_fast.setText(str(self.jog_rates[8]))
 
-
-
-
-
-# 		get marco file list of macro buttons
 	def get_macro_file_locations(self):
 		print 'getting macro_file_locations'
 		macro = range(15)
 		macro[0:] = [','] * 15
-		macro[0] = (self.inifile.find('X1GUI', 'MACRO_FILE_0'))
-		macro[1] = self.inifile.find('X1GUI', 'MACRO_FILE_1')
-		macro[2] = self.inifile.find('X1GUI', 'MACRO_FILE_2')
-		macro[3] = self.inifile.find('X1GUI', 'MACRO_FILE_3')
-		macro[4] = self.inifile.find('X1GUI', 'MACRO_FILE_4')
-		macro[5] = self.inifile.find('X1GUI', 'MACRO_FILE_5')
-		macro[6] = self.inifile.find('X1GUI', 'MACRO_FILE_6')
-		macro[7] = self.inifile.find('X1GUI', 'MACRO_FILE_7')
-		macro[8] = self.inifile.find('X1GUI', 'MACRO_FILE_8')
-		macro[9] = self.inifile.find('X1GUI', 'MACRO_FILE_9')
-		macro[10] = self.inifile.find('X1GUI', 'MACRO_FILE_10')
-		macro[11] = self.inifile.find('X1GUI', 'MACRO_FILE_11')
-		macro[12] = self.inifile.find('X1GUI', 'MACRO_FILE_12')
-		macro[13] = self.inifile.find('X1GUI', 'MACRO_FILE_13')
-		macro[14] = self.inifile.find('X1GUI', 'MACRO_FILE_14')
+		macro[0] = (self.inifile.find('MACROS', 'MACRO_FILE_0'))
+		macro[1] = self.inifile.find('MACROS', 'MACRO_FILE_1')
+		macro[2] = self.inifile.find('MACROS', 'MACRO_FILE_2')
+		macro[3] = self.inifile.find('MACROS', 'MACRO_FILE_3')
+		macro[4] = self.inifile.find('MACROS', 'MACRO_FILE_4')
+		macro[5] = self.inifile.find('MACROS', 'MACRO_FILE_5')
+		macro[6] = self.inifile.find('MACROS', 'MACRO_FILE_6')
+		macro[7] = self.inifile.find('MACROS', 'MACRO_FILE_7')
+		macro[8] = self.inifile.find('MACROS', 'MACRO_FILE_8')
+		macro[9] = self.inifile.find('MACROS', 'MACRO_FILE_9')
+		macro[10] = self.inifile.find('MACROS', 'MACRO_FILE_10')
+		macro[11] = self.inifile.find('MACROS', 'MACRO_FILE_11')
+		macro[12] = self.inifile.find('MACROS', 'MACRO_FILE_12')
+		macro[13] = self.inifile.find('MACROS', 'MACRO_FILE_13')
+		macro[14] = self.inifile.find('MACROS', 'MACRO_FILE_14')
 
 		#remove items that were blank and have been marked with 'None'
 		macro = filter(lambda v: v is not None, macro)
@@ -573,36 +543,36 @@ class HandlerClass:
 
 	def build_jog_increments(self):
 		# =========
-		inch_incr = self.inifile.find('X1GUI', 'LINEAR_INCR_INCH') 	# increments from ini file
+		inch_incr = self.inifile.find('INCH_INCREMENTS', 'LINEAR_INCR_INCH') 	# increments from ini file
 		inch_incr = list(inch_incr.split(',')) 						# convert to list
 		inch_incr = [float(i) for i in inch_incr]					# convert values to float
 		a = 0
 		for i in inch_incr:
 			self.inch_increments[a]=inch_incr[a]
 			if a <= 18: a=a+1
-		self.inch_increments[20] = float(self.inifile.find('X1GUI', 'LINEAR_INCR_INCH_DEFAULT'))
+		self.inch_increments[20] = float(self.inifile.find('INCH_INCREMENTS', 'LINEAR_INCR_INCH_DEFAULT'))
 		self.jog_control[7] = 0	# needs to be zero at start up
 
 		# =========
-		metric_incr = self.inifile.find('X1GUI', 'LINEAR_INCR_MM') 	# increments from ini file
+		metric_incr = self.inifile.find('MM_INCREMENTS', 'LINEAR_INCR_MM') 	# increments from ini file
 		metric_incr = list(metric_incr.split(',')) 					# convert to list
 		metric_incr = [float(i) for i in metric_incr]				# convert values to float
 		a = 0
 		for i in metric_incr:
 			self.metric_increments[a]=metric_incr[a]
 			if a <= 18: a=a+1
-		self.metric_increments[20] = float(self.inifile.find('X1GUI', 'LINEAR_INCR_MM_DEFAULT'))
+		self.metric_increments[20] = float(self.inifile.find('MM_INCREMENTS', 'LINEAR_INCR_MM_DEFAULT'))
 		self.jog_control[8] = 0	# needs to be zero at start up
 
 		# =========
-		angu_incr = self.inifile.find('X1GUI', 'ANGULAR_INCR') 		# increments from ini file
+		angu_incr = self.inifile.find('ANGULAR_INCREMENTS', 'ANGULAR_INCR') 		# increments from ini file
 		angu_incr = list(angu_incr.split(',')) 						# convert to list
 		angu_incr = [float(i) for i in angu_incr]					# convert values to float
 		a = 0
 		for i in angu_incr:
 			self.angular_increments[a]=angu_incr[a]
 			if a <= 18: a=a+1
-		self.angular_increments[20] = float(self.inifile.find('X1GUI', 'ANGULAR_INCR_DEFAULT'))
+		self.angular_increments[20] = float(self.inifile.find('ANGULAR_INCREMENTS', 'ANGULAR_INCR_DEFAULT'))
 		self.jog_control[9] = 0	# needs to be zero at start up
 
 
@@ -660,46 +630,65 @@ class HandlerClass:
 			self.jog_rates[2] = self.angular_increments[index]
 
 
+	def get_probing_defaults(self):
+		print 'loading probing default values'
 
-#		Preference file get and set prefered probing values
-	def get_preferences(self):
-		print 'using preference file values for probing'
-		pd = '%.5f' %(self.prefs.getpref('pf_probe_diam', 0.0, float) )
-		mt = '%.5f' %(self.prefs.getpref('pf_max_travel', 0.0, float) )
-		lr = '%.5f' %(self.prefs.getpref('pf_latch_return_dist', 0.0, float) )
-		sv = '%.5f' %(self.prefs.getpref('pf_search_vel', 0.0, float) )
-		pv = '%.5f' %(self.prefs.getpref('pf_probe_vel', 0.0, float) )
-		el = '%.5f' %(self.prefs.getpref('pf_side_edge_lenght', 0.0, float) )
-#		wh = '%.5f' %(self.prefs.getpref('pf_work_height', 0.0, float) )
-#		ts = '%.5f' %(self.prefs.getpref('pf_tool_sense_height', 0.0, float) )
-		xy = '%.5f' %(self.prefs.getpref('pf_xy_clearances', 0.0, float) )
-		zc = '%.5f' %(self.prefs.getpref('pf_z_clearance', 0.0, float) )
-		adj_x = '%.5f' %(self.prefs.getpref('pf_adj_x', 0.0, float) )
-		adj_y = '%.5f' %(self.prefs.getpref('pf_adj_y', 0.0, float) )
-		adj_z = '%.5f' %(self.prefs.getpref('pf_adj_z', 0.0, float) )
-		pf_adj_angle = '%.5f' %(self.prefs.getpref('pf_adj_angle', 0.0, float) )
+		pd = "%.5f" %(float(self.inifile.find('PROBING', 'PROBE_DIAM')))
+		mt = "%.5f" %(float(self.inifile.find('PROBING', 'MAX_TRAVEL')))
+		lr = "%.5f" %(float(self.inifile.find('PROBING', 'LATCH_RETURN_DIST')))
+		sv = "%.5f" %(float(self.inifile.find('PROBING', 'SEARCH_VEL')))
+		pv = "%.5f" %(float(self.inifile.find('PROBING', 'PROBE_VEL')))
+		el = "%.5f" %(float(self.inifile.find('PROBING', 'SIDE_EDGE_LENGHT')))
+		wh = "%.5f" %(float(self.inifile.find('PROBING', 'TOOL_PROBE_HEIGHT')))
+		ts = "%.5f" %(float(self.inifile.find('PROBING', 'TOOL_BLOCK_HEIGHT')))
+		xy = "%.5f" %(float(self.inifile.find('PROBING', 'XY_CLEARANCE')))
+		zc = "%.5f" %(float(self.inifile.find('PROBING', 'Z_CLEARANCE')))
+		adj_x = "%.5f" %(float(self.inifile.find('PROBING', 'ADJ_X')))
+		adj_y = "%.5f" %(float(self.inifile.find('PROBING', 'ADJ_Y')))
+		adj_z = "%.5f" %(float(self.inifile.find('PROBING', 'ADJ_Z')))
+		adj_a = '%.5f' %(float(self.inifile.find('PROBING', 'ADJ_ANGLE')))
+		rp = self.inifile.find('PROBING', 'PROBE_RAPID_VEL')
+		aaz = str(self.inifile.find('PROBING', 'ALLOW_AUTO_ZERO'))
+		aas = str(self.inifile.find('PROBING', 'ALLOW_AUTO_SKEW'))
+
+		######  The below have no destination #######
+		tis = int(self.inifile.find('PROBING', 'TOOL_IN_SPINDLE'))
+		rt =  bool(self.inifile.find('PROBING', 'RELOAD_TOOL'))
+		blh = '%.5f' % (float(self.inifile.find('PROBING', 'BLOCKHEIGHT')))
 
 		# set default probing panel user input values
-		self.w.input_probe_diam.setText(pd)
-		self.w.input_max_travel.setText(mt)
-		self.w.input_latch_return_dist.setText(lr)
-		self.w.input_search_vel.setText(sv)
-		self.w.input_probe_vel.setText(pv)
-		self.w.input_side_edge_lenght.setText(el)
-#		self.w.input_tool_probe_height.setText(wh)
-#		self.w.input_tool_block_height.setText(ts)
-		self.w.input_xy_clearances.setText(xy)
-		self.w.input_z_clearance.setText(zc)
+		self.w.versaprobe.input_probe_diam.setText(pd)
+		self.w.versaprobe.input_max_travel.setText(mt)
+		self.w.versaprobe.input_latch_return_dist.setText(lr)
+		self.w.versaprobe.input_search_vel.setText(sv)
+		self.w.versaprobe.input_probe_vel.setText(pv)
+		self.w.versaprobe.input_side_edge_length.setText(el)
+		self.w.versaprobe.input_xy_clearances.setText(xy)
+		self.w.versaprobe.input_z_clearance.setText(zc)
+		self.w.versaprobe.data_input_rapid_vel=(rp)
+		self.w.versaprobe.input_adj_x.setText = adj_x
+		self.w.versaprobe.input_adj_y.setText = adj_y
+		self.w.versaprobe.input_adj_z.setText = adj_z
+		self.w.versaprobe.input_adj_angle.setText = adj_a
+		self.w.versaprobe.input_tool_probe_height.setText(wh)
+		self.w.versaprobe.input_tool_block_height.setText(ts)
+		if aaz == 'YES':
+			self.w.versaprobe.pbtn_allow_auto_zero.setEnabled(True)
+		else:
+			self.w.versaprobe.pbtn_allow_auto_zero.setEnabled(False)
+		if aas == 'YES':
+			self.w.versaprobe.pbtn_allow_auto_skew.setEnabled(True)
+		else:
+			self.w.versaprobe.pbtn_allow_auto_skew.setEnabled(False)
 
-# 		spindle 0 settings from ini file
 	def get_spindle_0_settings(self):
 		print 'getting spindle 0 settings'
 
 		# set spindle 0 slider range, min and max values from ini file
-		values = self.inifile.find('SPINDLE', 'SPINDLE_0_RPM_MIN_MAX')
+		values = self.inifile.find('SPINDLE_0', 'SPINDLE_0_RPM_MIN_MAX')
 		values = list(values.split(','))
 		self.w.scrb_f9_spindle_0.setRange(float(values[0])*100,float(values[1])*100)
-		self.w.scrb_f9_spindle_0.setValue((float(self.inifile.find('SPINDLE', 'SPINDLE_0_DEFAULT_RPM')))*100)
+		self.w.scrb_f9_spindle_0.setValue((float(self.inifile.find('SPINDLE_0', 'SPINDLE_0_DEFAULT_RPM')))*100)
 		self.w.pbar_f9_spindle_0_rpm.setMinimum(0) #(int(values[0]))
 		self.w.pbar_f9_spindle_0_rpm.setMaximum(int(values[1]))
 
@@ -707,7 +696,7 @@ class HandlerClass:
 		self.w.pbar_f9_spindle_0_rpm.setValue(self.halcomp0 ['spindle_0_rpm_pbar'])
 
 		# set spindle 0 quick set buttons name and value from ini file
-		values_qs0 = self.inifile.find('SPINDLE', 'SPINDLE_0_QUICK_SETS')
+		values_qs0 = self.inifile.find('SPINDLE_0', 'SPINDLE_0_QUICK_SETS')
 		self.values_qs0 = list(values_qs0.split(','))
 
 		# button names
@@ -727,10 +716,10 @@ class HandlerClass:
 		print 'getting spindle 1 settings'
 
 		# set spindle 1 slider range, min and max values from ini file
-		values = self.inifile.find('SPINDLE', 'SPINDLE_1_RPM_MIN_MAX')
+		values = self.inifile.find('SPINDLE_1', 'SPINDLE_1_RPM_MIN_MAX')
 		values = list(values.split(','))
 		self.w.scrb_f6s2_0_spindle_1_rpm.setRange(float(values[0])*100,float(values[1])*100)
-		self.w.scrb_f6s2_0_spindle_1_rpm.setValue((float(self.inifile.find('SPINDLE', 'SPINDLE_1_DEFAULT_RPM')))*100)
+		self.w.scrb_f6s2_0_spindle_1_rpm.setValue((float(self.inifile.find('SPINDLE_1', 'SPINDLE_1_DEFAULT_RPM')))*100)
 		self.w.pbar_f6s2_0_spindle_1_rpm.setMinimum(0) #(int(values[0]))
 		self.w.pbar_f6s2_0_spindle_1_rpm.setMaximum(int(values[1]))
 
@@ -741,7 +730,7 @@ class HandlerClass:
 		self.w.pbar_f6s2_0_spindle_1_rpm.setValue(self.halcomp0 ['spindle_1_rpm_pbar'])
 
 		# set spindle 1 quick set buttons name and value from ini file
-		values_qs1= self.inifile.find('SPINDLE', 'SPINDLE_1_QUICK_SETS')
+		values_qs1= self.inifile.find('SPINDLE_1', 'SPINDLE_1_QUICK_SETS')
 		self.values_qs1 = list(values_qs1.split(','))
 
 		# button names
@@ -761,21 +750,20 @@ class HandlerClass:
 # 		periodic updates
 # ===================================================================
 	def on_periodic(self,w):
-		self.s.poll()
-		self.update_gcodes()
-		self.update_mcodes()
+		self.stat.poll()
+
+		self.update_gcodes() # updates status area
+		self.update_mcodes() # updates status area
 #		self.update_spindles()
 		self.update_limits_label()
-		self.w.lab_f11s4_0_feed_rate.setText('%.2f' %(float(self.s.current_vel * 100)))
-		self.w.lab_f12s5_2_gcode_motion_line.setText(str(int(self.s.motion_line)))
-		self.w.lab_f12s5_2_gcode_current_line.setText(str(int(self.s.current_line)))
-		self.w.lab_f11s4_0_tool_number.setText(str(int(self.s.tool_in_spindle)))
+#		self.w.lab_f11s4_0_feed_rate.setText('%.2f' %(float(self.stat.current_vel * 100)))
+#		self.w.lab_f12s5_2_gcode_motion_line.setText(str(int(self.stat.motion_line)))
+#		self.w.lab_f12s5_2_gcode_current_line.setText(str(int(self.stat.current_line)))
+#		self.w.lab_f11s4_0_tool_number.setText(str(int(self.stat.tool_in_spindle)))
 		self.interp_state()
-#		self.safe_home_all()
-#		self.mdi_to_manual()
+		self.safe_home_all()
+		self.mdi_to_manual()
 		self.jogging_handler()
-
-
 #		print 'self.jog_control:       ', self.jog_control
 #		print 'line 856 jog_control 7: ', self.jog_control[7]
 #		print 'line 856 jog_control 8: ', self.jog_control[8]
@@ -783,8 +771,8 @@ class HandlerClass:
 #		print 'line 859  jog_rates:    ', self.jog_rates
 
 
-		feed = self.s.feedrate
-		self.w.lab_f12s5_0_jog_rate.setText(str(feed*100))
+		feed = self.stat.feedrate
+#		self.w.lab_f12s5_0_jog_rate.setText(str(feed*100))
 
 		self.w.lab_f4_time_date.setText(strftime('%H:%M:%S\n%m/%d/%Y'))
 		return True
@@ -906,34 +894,49 @@ class HandlerClass:
 
 
 # ===================================================================
+	def on_state_on(self,w):
+		print 'machine on'
+	def on_state_off(self,w):
+		print 'machine off'
+
+	def search_kill_process(self,name):
+		# name = onboard
+		process = filter(lambda p: p.name() == 'name', psutil.process_iter())
+		for i in process:
+			print i.name
+			parent_pid = i.pid
+			parent = psutil.Process(parent_pid)
+			parent.kill()
+		sys.exit()
+
 	def mdi_to_manual(self):
 		if self.jog_control[10] == -1:
 			return
 		if self.jog_control[10] == 1:
-			if self.s.inpos == True:
+			if self.stat.inpos == True:
 				# task_mode: manual = 1, auto = 2, midi = 3
-				if self.s.task_mode == 3:
+				if self.stat.task_mode == 3:
 					self.c.mode(linuxcnc.MODE_MANUAL)
 					self.jog_control[10] = -1
 					print "mdi position cmd completed"
 
 	def safe_home_all(self):
-		if self.s.estop == 1: self.machine_info[3] = -1
+		if self.stat.estop == 1: self.machine_info[3] = -1
 		if self.machine_info[3] == -1:
 			return
 		if self.machine_info[3] == 1:
 			data = range(9)
 			data[0:] = [','] * 9
-			data = self.s.homed
-			self.c.home(2)
+			data = self.stat.homed
+			self.c.home(2) # home z
 			self.c.wait_complete()
 			self.machine_info[3] = 2
-		data = self.s.homed
+		data = self.stat.homed
 		if data[2] == 1:
 			if self.machine_info[3] == 2:
 				print 'z is homed' #, data
-				self.c.home(0)
-				self.c.home(1)
+				self.c.home(0) # home x
+				self.c.home(1) # home Y
 				self.c.wait_complete()
 				self.machine_info[3] = 3
 		if self.machine_info[3] == 3:
@@ -943,10 +946,8 @@ class HandlerClass:
 				print 'y is homed' #, data
 			self.machine_info[3] = -1
 
-
-#		update interpreter status display
 	def interp_state(self):
-		state = self.s.interp_state
+		state = self.stat.interp_state
 		interp = 'x1Gui v1.0.1'
 		if state == 1:
 			interp = 'IDLE'
@@ -958,26 +959,24 @@ class HandlerClass:
 			interp = 'WAITING'
 		self.w.plab_f11s4_0_interp.setText(interp)
 
-#		update the in limits label on front panel to indicate which axis is in limits
 	def update_limits_label(self):
-		if self.s.limit[0] > 0:
+		if self.stat.limit[0] > 0:
 			self.w.plab_f2_limits_label.setText('X LIM')
-		elif self.s.limit[1] > 0:
+		elif self.stat.limit[1] > 0:
 			self.w.plab_f2_limits_label.setText('Y LIM')
-		elif self.s.limit[2] > 0:
+		elif self.stat.limit[2] > 0:
 			self.w.plab_f2_limits_label.setText('Z LIM')
 		else:
 			self.w.plab_f2_limits_label.setText('Limits')
 			pass
 
 	def plab_f2_limits_label_setText(self):
-		do_nothing =0
+		do_nothing = 0
 
-#		periodic gcodes update
 	def update_gcodes(self):
 		gcode_list=''
 		gcodes = []
-		for i in self.s.gcodes[1:]:
+		for i in self.stat.gcodes[1:]:
 			if i == -1: continue
 			if i % 10 == 0:
 				gcodes.append('G%d' % (i/10))
@@ -986,36 +985,28 @@ class HandlerClass:
 		gcode_list = ' '.join(gcodes)
 		self.w.lab_f11s4_0_gcode_list.setText(gcode_list)
 
-# 		periodic mcodes update
 	def update_mcodes(self):
 		mcode_list=''
 		mcodes = []
-		for i in self.s.mcodes[1:]:
+		for i in self.stat.mcodes[1:]:
 			if i == -1: continue
 			mcodes.append('M%d' % i)
 		mcode_list = ' '.join(mcodes)
 		self.w.lab_f11s4_0_mcode_list.setText(mcode_list)
 
-#		periodic spindle 0 and 1 update
 	def update_spindles(self):
 		self.w.pbar_f9_spindle_0_rpm.setFormat(str(int(self.halcomp0 ['spindle_0_rpm_pbar'])))
 		self.w.pbar_f9_spindle_0_rpm.setValue(self.halcomp0 ['spindle_0_rpm_pbar'])
 		self.w.pbar_f6s2_0_spindle_1_rpm.setFormat(str(int(self.halcomp0 ['spindle_1_rpm_pbar'])))
 		self.w.pbar_f6s2_0_spindle_1_rpm.setValue(self.halcomp0 ['spindle_1_rpm_pbar'])
 
-	def on_state_on(self,w):
-		print 'machine on'
-	def on_state_off(self,w):
-		print 'machine off'
-
-#		ensure proper mode
 	def ensure_mode(self,m, *p):
-		self.s.poll()
+		self.stat.poll()
 		# task_mode: manual = 1, auto = 2, midi = 3
-		if self.s.task_mode == m or self.s.task_mode in p: return True
+		if self.stat.task_mode == m or self.stat.task_mode in p: return True
 		self.c.mode(m) # task_mode
 		self.c.wait_complete()
-		self.s.poll()
+		self.stat.poll()
 		return True
 
 # Start of gui buttons and other items
@@ -1029,7 +1020,8 @@ class HandlerClass:
 #	net estop-clear oneshot.1.out halui.estop.reset
 #	-----------------------------------------------------
 
-# F0	MainWindow panel buttons
+# F0
+
 	def pb_f0_estop_toggle(self,pressed):
 		if pressed:
 			enable = False
@@ -1047,7 +1039,8 @@ class HandlerClass:
 			self.jog_control[1] = 0 # jogging mode set to none
 			print 'estop cleared'
 
-# F1	MainWindow panel buttons
+# F1
+
 	def pb_f1_power_toggle(self,pressed):
 		if pressed:
 			enable = True
@@ -1094,7 +1087,7 @@ class HandlerClass:
 			self.c.wait_complete()
 			self.w.stackedWidget_5.setCurrentIndex(2)
 			self.w.pb_f1_keyboard.setEnabled(False)
-			file_name = str(self.s.file)
+			file_name = str(self.stat.file)
 			enable = '.ngc' in file_name
 			self.auto_no_file(enable)
 			print 'auto mode'
@@ -1105,9 +1098,8 @@ class HandlerClass:
 			# sends using Hal Xembed: command-string 'matchbox-keyboard --xid'
 		else:
 			self.w.stackedWidget_1.setCurrentIndex(0)
+# F2
 
-
-# F2	MainWindow panel buttons
 	def pb_f2_abort_toggle(self,pressed):
 		# hal pin: x1mill_p.pb_f1_spare
 		if pressed:
@@ -1123,22 +1115,13 @@ class HandlerClass:
 		self.c.state(linuxcnc.STATE_OFF)
 		self.c.wait_complete()
 
-#		the onboard keyboard did not work out so this is not needed
-#		as is but saved for potential use
-#
-#		process = filter(lambda p: p.name() == 'onboard', psutil.process_iter())
-#		for i in process:
-#			print i.name
-#			parent_pid = i.pid
-#			parent = psutil.Process(parent_pid)
-#			parent.kill()
-		sys.exit()
+# F3
 
-# F3	MainWindow panel buttons
 	def pb_f3_graphic_toggle(self, pressed):
 		if pressed:
 			self.w.stackedWidget_3.setCurrentIndex(0)
 			self.w.stackedWidget_4.setCurrentIndex(0)
+			self.w.gcodegraphics.set_view('p')
 
 	def pb_f3_homing_toggle(self, pressed):
 		if pressed:
@@ -1146,11 +1129,13 @@ class HandlerClass:
 			self.w.stackedWidget_4.setCurrentIndex(0)
 			self.w.pb_f1_manual.animateClick(True)
 			self.c.mode(linuxcnc.MODE_MANUAL)
+			self.w.gcodegraphics_2.set_view('p')
 
 	def pb_f3_tool_toggle(self, pressed):
 		if pressed:
 			self.w.stackedWidget_3.setCurrentIndex(2)
 			self.w.stackedWidget_4.setCurrentIndex(0)
+
 
 	def pb_f3_probe_toggle(self,pressed):
 		if pressed:
@@ -1190,7 +1175,8 @@ class HandlerClass:
 			self.w.stackedWidget_3.setCurrentIndex(9)
 			self.w.stackedWidget_4.setCurrentIndex(0)
 
-# F4 	MainWindow panel buttons
+# F4
+
 	def pb_f4_flood_toggle(self,pressed):
 		# hal pin: x1mill_p.pb_f4_flood
 		if pressed:
@@ -1214,7 +1200,8 @@ class HandlerClass:
 		name = self.w.sender().text()
 		print name
 
-# F5  	selects stacked widget 2
+# F5
+
 	def pb_f5_spindle_1_toggle(self,pressed):
 		if pressed:
 			self.w.stackedWidget_2.setCurrentIndex(0) # axis4_panel
@@ -1231,7 +1218,8 @@ class HandlerClass:
 		if pressed:
 			self.w.stackedWidget_2.setCurrentIndex(4) # dro_5_to_9_panel
 
-# F6 	Index 0 stackedWidget_2
+# F6_0
+
 	def pb_f6s2_0_spindle_1_enable_toggle(self,pressed):
 		if pressed:
 			print 'Spindle_1_enabled'
@@ -1272,7 +1260,8 @@ class HandlerClass:
 		if pressed:
 			self.c.spindle(-1,400,1) # dir/speed/spindle
 
-# F6 	Index 1 stackedWidget_2
+# F6_1
+
 	def pb_f6s2_1_zero_current_toggle(self):
 		cmd = 'G10 L2 P0 X0 Y0 Z0 A0'
 		self.fast_zero(cmd)
@@ -1355,8 +1344,8 @@ class HandlerClass:
 		print 'COMMAND >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>:',cmd
 		self.jog_control[10] = 1 # position mdi cmd mode change
 
+# F6_2
 
-# F6 	Index 2 stackedWidget_2 - uses [MDI_COMMAND_LIST] in INI file
 	def pb_f6s2_2_macro_0_click(self,name):
 		cmd = self.macro_file_list[0][1]
 		print 'macro file cmd:' ,cmd
@@ -1417,7 +1406,8 @@ class HandlerClass:
 		cmd = self.macro_file_list[14][1]
 		print 'macro file cmd:' ,cmd
 
-# F6 	Index 3 stackedWidget_2
+# F6_3
+
 	def scrb_f6s2_3_override_spindle_0_setRange(self):
 		print ''
 	def lab_f6s2_3_override_spindle_0_setText(self):
@@ -1464,36 +1454,32 @@ class HandlerClass:
 		name = self.w.sender().text()
 		print name
 
-# F6 	Index 4 stackedWidget_2
-	def dro_f6s2_4_display_b_setText(self):
-		self=0
-	def dro_f6s2_4_display_c_setText(self):
-		self=0
-	def dro_f6s2_4_display_u_setText(self):
-		self=0
-	def dro_f6s2_4_display_v_setText(self):
-		self=0
-	def dro_f6s2_4_display_w_setText(self):
-		self=0
+# F6
 
-# F7 	dro buttons
+	def dro_f6s2_4_display_b_setText(self):
+		print ''
+	def dro_f6s2_4_display_c_setText(self):
+		print ''
+	def dro_f6s2_4_display_u_setText(self):
+		print ''
+	def dro_f6s2_4_display_v_setText(self):
+		print ''
+	def dro_f6s2_4_display_w_setText(self):
+		print ''
+
+# F7
+
 	def pb_f7_dro_abs_toggle(self,pressed):
 		if pressed:
-			STATUS.emit('dro-reference-change-request', 0)
-			name = self.w.sender().text()
-			print 'Dro changed to:',name
+			GSTAT.emit('dro-reference-change-request', 0) # passed to STATUS dro_widget.py
 
 	def pb_f7_dro_rel_toggle(self,pressed):
 		if pressed:
-			STATUS.emit('dro-reference-change-request', 1)
-			name = self.w.sender().text()
-			print 'Dro changed to:',name
+			GSTAT.emit('dro-reference-change-request', 1) # passed to STATUS dro_widget.py
 
 	def pb_f7_dro_dtg_toggle(self,pressed):
 		if pressed:
-			STATUS.emit('dro-reference-change-request', 2)
-			name = self.w.sender().text()
-			print 'Dro changed to:',name
+			GSTAT.emit('dro-reference-change-request', 2) # passed to STATUS dro_widget.py
 
 	def pb_f7_dro_units_toggle(self,pressed):  # dro units change requested <<<<
 		if pressed:
@@ -1501,40 +1487,53 @@ class HandlerClass:
 				self.jog_control[6] = 2			# metric increments in use now
 				self.machine_info[2]  = 2		# values to be converted to metric
 				self.label_linear_jog_btns()	# change button and panel labels
+				GSTAT.emit('metric-mode-changed', 1)	# passed to STATUS dro_widget.py
 
 			if self.machine_info[0]  == 2:		# machine units are metric but dro btn calls for inch increments
 				self.jog_control[6] = 1			# inch increments in use now
 				self.machine_info[2]  = 1		# values to be converted to inch
 				self.label_linear_jog_btns()	# change button and panel labels
+				GSTAT.emit('metric-mode-changed', 0)	# passed to STATUS dro_widget.py
 
 		else: 	 # back to machines ini units <<<<
 			if self.machine_info[0]  == 2:		# machine units are metric and dro btn calls for metric increments
 				self.jog_control[6] = 2			# metric increments in use now
 				self.machine_info[2]  = 2  		# values to be converted to metric
 				self.label_linear_jog_btns()	# change button and panel labels
+				GSTAT.emit('metric-mode-changed', 1)	# passed to STATUS dro_widget.py
 
 			if self.machine_info[0]  == 1:		# machine units are inch and dro btn calls for inch increments
 				self.jog_control[6] = 1			# inch increments in use now
 				self.machine_info[2]  = 1		# values to be converted to inch
 				self.label_linear_jog_btns()	# change button and panel labels
+				GSTAT.emit('metric-mode-changed', 0)	# passed to STATUS dro_widget.py
 
-
-	def pb_f7_dro_spare_toggle(self,pressed):
+	def pb_f7_dro_norm_diam_toggle(self,pressed):
 		if pressed:
-			name = self.w.sender().text()
-			print name
+			GSTAT.emit('diameter-mode', 1)	# passed to STATUS dro_widget.py
+			self.w.plab_f8_x.setText('DIA')
+		else:
+			GSTAT.emit('diameter-mode', 0)	# passed to STATUS dro_widget.py
+			self.w.plab_f8_x.setText('X')
 
-# F8	dro displays
+	def pb_f7_dro_current_pos_toggle(self,pressed):
+		if pressed:
+			GSTAT.emit('current-position',0,1,2)	# passed to STATUS dro_widget.py
+		else:
+			GSTAT.emit('current-position', 0,1,2)	# passed to STATUS dro_widget.py
+
+# F8
+
 	def dro_f8_display_x_setText(self):
-		self=0
+		print ''
 	def dro_f8_display_y_setText(self):
-		self=0
+		print ''
 	def dro_f8_display_z_setText(self):
-		self=0
+		print ''
 	def dro_f8_display_a_setText(self):
-		self=0
+		print ''
 
-# F12
+# F12_0
 
 	def pb_f12s5_0_jog_pos_x_pressed(self):
 		self.jog_control[4]	= 0			# axis number
@@ -1549,7 +1548,6 @@ class HandlerClass:
 			self.machine_info[4] = 2    # stop jogging
 			self.jogging_handler()
 
-
 	def pb_f12s5_0_jog_neg_x_pressed(self):
 		self.jog_control[4]	= 0 		# axis number
 		self.jog_control[5] = -1		# direction
@@ -1562,7 +1560,6 @@ class HandlerClass:
 			self.jog_control[5] = 0		# direction
 			self.machine_info[4] = 2    # stop jogging
 			self.jogging_handler()
-
 
 	def pb_f12s5_0_jog_pos_y_pressed(self):
 		self.jog_control[4]	= 1			# axis number
@@ -1577,7 +1574,6 @@ class HandlerClass:
 			self.machine_info[4] = 2    # stop jogging
 			self.jogging_handler()
 
-		# jog Y neg
 	def pb_f12s5_0_jog_neg_y_pressed(self):
 		self.jog_control[4]	= 1 		# axis number
 		self.jog_control[5] = -1		# direction
@@ -1591,7 +1587,6 @@ class HandlerClass:
 			self.machine_info[4] = 2    # stop jogging
 			self.jogging_handler()
 
-		# jog Z pos
 	def pb_f12s5_0_jog_pos_z_pressed(self):
 		self.jog_control[4]	= 2			# axis number
 		self.jog_control[5] = 1			# direction
@@ -1654,8 +1649,6 @@ class HandlerClass:
 		if self.jog_control[1] == 3:	# angular
 			self.w.plab_f12s5_0_jog_incr_label.setText('DEGREE INCR')
 
-#		jogging position mode - position jog mode is only for use
-#		with preset commands read from .ini file
 	def pb_f12s5_0_jog_position_toggle(self,pressed):
 		self.w.pb_f12s5_0_jog_pos_x.setEnabled(False)
 		self.w.pb_f12s5_0_jog_neg_x.setEnabled(False)
@@ -1667,16 +1660,15 @@ class HandlerClass:
 		self.w.pb_f12s5_0_jog_neg_a.setEnabled(False)
 
 		if pressed:
-#			STATUS.set_jog_increments(0,0)
+#			GSTAT.set_jog_increments(0,0)
 			self.w.pb_f12s5_0_jog_continous.setChecked(False)
 			self.w.pb_f12s5_0_jog_continous.setEnabled(False)
 			self.w.pb_f12s5_0_jog_increment.setChecked(False)
 			self.w.pb_f12s5_0_jog_increment.setEnabled(False)
 			self.jog_control[1] = 1
 			self.w.stackedWidget_6.setCurrentIndex(1)
-#			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
+#			self.w.lab_f12s5_0_jog_incr.setText(str(GSTAT.get_jog_increment()))
 			self.label_panel_labels()
-
 
 	def pb_f12s5_0_jog_linear_toggle(self,pressed):
 		self.w.pb_f12s5_0_jog_continous.setEnabled(True)
@@ -1692,11 +1684,9 @@ class HandlerClass:
 		if pressed:
 			self.jog_control[1] = 2 # linear mode
 			self.w.stackedWidget_6.setCurrentIndex(0)
-			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment()))
-			self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte()))
+			self.w.lab_f12s5_0_jog_incr.setText(str(GSTAT.get_jog_increment()))
+			self.w.lab_f12s5_0_jog_rate.setText(str(GSTAT.get_jograte()))
 			self.label_panel_labels()
-
-
 
 	def pb_f12s5_0_jog_angular_toggle(self,pressed):
 		self.w.pb_f12s5_0_jog_continous.setEnabled(True)
@@ -1712,8 +1702,8 @@ class HandlerClass:
 		if pressed:
 			self.jog_control[1] = 3 # angular mode
 			self.w.stackedWidget_6.setCurrentIndex(2)
-			self.w.lab_f12s5_0_jog_incr.setText(str(STATUS.get_jog_increment_angular()))
-			self.w.lab_f12s5_0_jog_rate.setText(str(STATUS.get_jograte_angular()))
+			self.w.lab_f12s5_0_jog_incr.setText(str(GSTAT.get_jog_increment_angular()))
+			self.w.lab_f12s5_0_jog_rate.setText(str(GSTAT.get_jograte_angular()))
 			self.label_panel_labels()
 
 	def pb_f12s5_0_jog_rate_slow_toggle(self,pressed):
@@ -1729,7 +1719,7 @@ class HandlerClass:
 	def pb_f12s5_0_jog_increment_toggle(self,pressed):
 		if pressed:
 			self.jog_control[2] = 2 # set to increment jogging mode
-
+# F12_1
 
 	def scrb_f12s6_1_jog_position_slow_setValue(self,value):
 		self.w.lab_f12s6_1_jog_position_slow.setText(str(value))
@@ -1782,7 +1772,6 @@ class HandlerClass:
 		self.c.mode(linuxcnc.MODE_MDI)
 		self.c.mdi(str(self.jogging_position_cmds[btn][1]))
 		self.jog_control[10] = 1 # position mdi cmd mode change
-
 
 	def pb_f12s6_0_jog_linear_0_pressed(self):
 		self.new_linear_incr(index = 0)
@@ -1909,15 +1898,10 @@ class HandlerClass:
 		place_holder=0
 	def lab_f12s6_2_jog_angular_fast_setText(self):
 		place_holder=0
-
-		# displayed
 	def lab_f12s5_0_jog_rate_setText(self):
 		place_holder=0
 	def lab_f12s5_0_jog_incr_setText(self):
 		place_holder=0
-
-# 		end of jogging section
-
 
 # F9	spindle and dro panel -- stackedWidget_3 index(0)
 		# values are adjusted to give 1 rpm change per click - linuxcnc uses revs per second
@@ -1971,10 +1955,14 @@ class HandlerClass:
 #		Hal Xembed: command-string 'matchbox-keyboard --xid' - location and size 0x0x954x228
 
 # F10_0	Gcode graphics display panel
-	def pb_f10sw3_0_graph_spare_toggle(self):
-		print 'graph_spare_2'
+	def pb_f10sw3_0_graph_inch_mm_toggle(self,pressed):
+		if pressed:
+			self.w.gcodegraphics.set_metric_units(0,1)
+		else:
+			self.w.gcodegraphics.set_metric_units(1,0)
+
 	def pb_f10sw3_0_graph_dro_toggle(self):
-		print 'graph_dro'
+		self.w.gcodegraphics.show_dtg
 	def pb_f10sw3_0_zoom_out_pressed(self):
 		print 'graph_zoom out'
 #		self.w.GRAPHICS_NAME.zoom_out()
@@ -1982,21 +1970,24 @@ class HandlerClass:
 		print 'graph_zoom in'
 #		self.w.GRAPHICS_NAME.zoom_in()
 	def pb_f10sw3_0_graph_x_toggle(self):
-		STATUS.emit('view-changed', '%s' % 'x')
+		self.w.gcodegraphics.set_view('x')
+
 	def pb_f10sw3_0_graph_y_toggle(self):
-		STATUS.emit('view-changed', '%s' % 'y')
+		self.w.gcodegraphics.set_view('y')
 	def pb_f10sw3_0_graph_z_toggle(self):
-		STATUS.emit('view-changed', '%s' % 'z')
+		self.w.gcodegraphics.set_view('z')
 	def pb_f10sw3_0_graph_z2_toggle(self):
-		STATUS.emit('view-changed', '%s' % 'z2')
+		self.w.gcodegraphics.set_view('z2')
 	def pb_f10sw3_0_graph_p_toggle(self):
-		STATUS.emit('view-changed', '%s' % 'p')
+		self.w.gcodegraphics.set_view('p')
 	def pb_f10sw3_0_graph_clear_clicked(self):
-		STATUS.emit('view-changed', '%s' % 'clear')
+		self.w.gcodegraphics.clear_live_plotter()
+
 
 # F10_1	Homing panel
 	def pb_f10sw3_1_home_xyz_toggle(self):
 		self.machine_info[3] = 1
+		self.safe_home_all()
 
 	def pb_f10sw3_1_home_x_toggle(self):
 		self.c.home(0)
@@ -2039,8 +2030,8 @@ class HandlerClass:
 
 # F12   auto mode gcode
 	def pb_f12s5_2_gcode_load_pressed(self):
-		if self.s.task_mode == 2:
-			file_name = str(self.s.file)
+		if self.stat.task_mode == 2:
+			file_name = str(self.stat.file)
 			enable = '.ngc' in file_name
 			self.auto_no_file(enable)
 		# doing this for now
@@ -2051,7 +2042,7 @@ class HandlerClass:
 #			self.c.program_open(str(fname))
 #		else:
 #			self.open_filter_program(str(fname), flt)
-#		STATUS.emit('reload-display')
+#		GSTAT.emit('reload-display')
 
 		# run gcode
 	def pb_f12s5_2_gcode_run_pressed(self):
@@ -2059,14 +2050,14 @@ class HandlerClass:
 		self.c.auto(linuxcnc.AUTO_RUN,0)
 
 	def pb_f12s5_2_gcode_step_toggle(self):
-#		if self.s.task_mode != linuxcnc.MODE_AUTO or self.s.interp_state != linuxcnc.INTERP_IDLE:
+#		if self.stat.task_mode != linuxcnc.MODE_AUTO or self.stat.interp_state != linuxcnc.INTERP_IDLE:
 #			return
 		self.ensure_mode(linuxcnc.MODE_AUTO)
 		self.c.auto(linuxcnc.AUTO_STEP)
 
 		# pause
 	def pb_f12s5_2_gcode_pause_toggle(self,pressed):
-#		if self.s.task_mode != linuxcnc.MODE_AUTO or self.s.interp_state not in (linuxcnc.INTERP_READING, linuxcnc.INTERP_WAITING):
+#		if self.stat.task_mode != linuxcnc.MODE_AUTO or self.stat.interp_state not in (linuxcnc.INTERP_READING, linuxcnc.INTERP_WAITING):
 #			return
 		if pressed:
 			self.c.auto(linuxcnc.AUTO_PAUSE)
@@ -2074,7 +2065,7 @@ class HandlerClass:
 			self.c.auto(linuxcnc.AUTO_RESUME)
 
 #		self.ensure_mode(linuxcnc.MODE_AUTO)
-#		if not self.s.paused:
+#		if not self.stat.paused:
 #			print 'Line 2230 we are paused'
 #			self.c.auto(linuxcnc.AUTO_RESUME)
 #		else:
@@ -2176,7 +2167,7 @@ class HandlerClass:
 
 # 		The below are standard items
 	def continuous_jog(self, axis, direction):
-		STATUS.continuous_jog(axis, direction)
+		GSTAT.continuous_jog(axis, direction)
 
 	def on_keycall_ESTOP(self,event,state,shift,cntrl):
 		if state:
