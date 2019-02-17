@@ -1,4 +1,4 @@
-T1 P0 D0.1360 Z1.0000 ;#29 Drill 
-T2 P0 D0.0290 Z0.0000 ;PCB drill 
-T3 P0 D0.0020 Z0.0000 ;Engraving tool 
-T4 P0 D0.1250 Z0.0000 ;end mill 
+T1 P0 D0.136000 Z+1.000000 ;#29 Drill 
+T2 P0 D0.029000 ;PCB drill 
+T3 P0 D0.002000 ;Engraving tool 
+T4 P0 D0.125000 ;end mill 

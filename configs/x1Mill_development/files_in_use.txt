@@ -1,0 +1,32 @@
+These are what is used to load and run the x1Mill gui on 01-22-2019
+
+Main
+     qtvcp/core.py
+     qtvcp/logger.py
+     qtvcp/qt_action.py
+     qtvcp/qt_istat.py
+     qtvcp/qt_makegui.py
+     qtvcp/qt_makepins.py
+     qtvcp/qt_tstat.py
+     qtvcp/qtvcp_handler.py
+
+Widgets
+     camview_widget.py
+     dialog_widget.py
+     dro_widget.py
+     entry_widget.py
+     file_manager.py
+     gcode_editor.py
+     gcode_graphics.py
+     led_widget.py
+     macro_widget.py
+     mdi_history.py
+     mdi_line.py
+     origin_offsetview.py
+     screen_options.py
+     simple_widgets.py
+     status_label.py
+     tool_offsetview.py
+     versa_probe.py
+     widget_baseclass.py
+     xembed.py

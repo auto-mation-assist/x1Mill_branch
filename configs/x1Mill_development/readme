@@ -1,11 +1,15 @@
-01-19-2019 22:37 Alaska time
+02-17-2019 07:55 Alaska time
 
-The items in this folder are for information only and reviewing the floowing files:
+Current work with many changes in handling of jogging and spindle control
+and inch to metric handling. I have been working on the homing and need further work
+on not homing Z when not required. This may have problem right now.
 
-x1Mill.ui
-x1Mill_handler.py
-x1Mill/x1Mill.ini
-x1Mill.hal
-x1mill_postgui.hal
+Being bothered by 'you cant do that" issues when trying to run program. Likely a
+Gstat related issue betwen QTvcp and my own concepts of system control. 
 
-I have not had time availble to make a simulation.
+Will continue on this project as time becomes available.
+
+Old files were relocated to folder 'old files' 
+
+Current development work is using Mint 19.1. Machine interface is with
+Mesa 7i80 with custom bit file. 

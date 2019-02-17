@@ -1,71 +1,55 @@
 # x1Millpostgui.hal  01-12-2019
 
 
-# estop button and reset logic
+#	estop button and reset logic
 setp oneshot.1.width .150
 net estop-set x1Mill.pb_f0_estop halui.estop.activate  not.4.in
 net estop-notset  not.4.out  oneshot.1.in
 net estop-clear oneshot.1.out halui.estop.reset
 
-# leds on gui alarm panel
-net power-on 			   x1Mill.led_f12s7_0_power_on  halui.machine.is-on
-net estoped				   x1Mill.led_f12s7_0_estop     halui.estop.is-activated
-net limit-active           x1Mill.led_f12s7_0_in_limits
-net pgui_spindle-speed-ok  x1Mill.led_f12s7_0_spindle_0_rpm_error
-#                          x1Mill.led_f12s7_0_spindle_1_rpm_error
-net pgui_probe-spindle-in  x1Mill.led_f12s7_0_probe_check
+#	leds on gui alarm panel
+net power-on					x1Mill.led_f2_power_on  halui.machine.is-on
+net estoped						x1Mill.led_f2_estop     halui.estop.is-activated
+net limit-active				x1Mill.led_f2_in_limits
+net pgui_spindle0-speed-ok x1Mill.led_f2_spindle_0_rpm_error 
+#									x1Mill.led_f2_spindle_1_rpm_error
+net pgui_probe-spindle-in	x1Mill.led_f2_probe_check
+net mdi_mode					x1Mill.led_f2_mdi	halui.mode.is-mdi
 
 
-# spindle 0 speed status display and bar
-net pgui_spindle-speed       x1Milla.spindle_0_rpm_pbar
-net pgui_spindle-speed-ok    x1Mill.led_f12s7_0_spindle_0_rpm_error
-net spindle0-rps             x1Milla.spindle_0_set_rpm
+net spindle0-rps				x1Milla.spindle_0_set_rpm
+net spindle0-get-vel 		x1Milla.spindle_0_rpm_pbar
 
-# spindle 1
-#net spindle1_forward x1Mill.pbtn_spindle_1_forward  halui.spindle.1.forward
-#net spindle1_stop    x1Mill.pbtn_spindle_1_stop     halui.spindle.1.stop not.4.in
-#net spindle1_run     not.4.out                      halui.spindle.1.start
-#net spindle1_reverse x1Mill.pbtn_spindle_1_reverse  halui.spindle.1.reverse
 
-# part of probing panel
-net auto-zero  x1Mill.pbtn_allow_auto_zero  x1Mill.led_auto_zero_warning
-net auto-skew  x1Mill.pbtn_allow_auto_skew  x1Mill.led_auto_skew_warning
+#	spindle 0
+#net spindle0_forward		x1Mill.spindle_0_forward	halui.spindle.0.forward
+#net spindle0_stop			x1Mill.spindle_0_stop		halui.spindle.0.stop not.5.in
+#net spindle0_run			   not.5.out						halui.spindle.0.start
+#net spindle0_reverse		x1Mill.spindle_0_reverse	halui.spindle.0.reverse
 
-#drive Z-axis to home switch when switched turned to manual not CNC control.
-#so z axis ballscrew clmap can be released from ball screw.
 
-#change to manual no cnc mode
-###net manual-mode-selected  gmoccapy.jog.jog-inc-0
+#	spindle 1
+#net spindle1_forward		x1Mill.spindle_1_forward	halui.spindle.1.forward
+#net spindle1_stop			x1Mill.spindle_1_stop		halui.spindle.1.stop not.6.in
+#net spindle1_run				not.6.out							halui.spindle.1.start
+#net spindle1_reverse		x1Mill.spindle_1_reverse	halui.spindle.1.reverse
+
+#	part of probing panel
+net auto-zero					x1Mill.pbtn_allow_auto_zero	x1Mill.led_auto_zero_warning
+net auto-skew					x1Mill.pbtn_allow_auto_skew	x1Mill.led_auto_skew_warning
+
+#	change from cnc mode to machines manual mode
+net move_out_gui  or2.4.in1 x1Mill.pb_f2_out_of_limits
 net manual-mode-check-ok  or2.0.in0
 net limits-button-move    or2.0.in1  and2.6.out
 
-#Move out of limits using the control panel MOV OUT LIM
-#Z plus output is merged with output from manual mode via or2
-###net limits-xlim-p  gmoccapy.jog.axis.jog-x-minus  <= and2.1.out
-###net limits-xlim-n  gmoccapy.jog.axis.jog-x-plus   <= and2.2.out
-###net limits-ylim-p  gmoccapy.jog.axis.jog-y-minus  <= and2.3.out
-###net limits-ylim-n  gmoccapy.jog.axis.jog-y-plus   <= and2.4.out
-###net limits-zlim-p  gmoccapy.jog.axis.jog-z-minus  <= and2.5.out
-###net limits-zlim-n  gmoccapy.jog.axis.jog-z-plus   <= or2.0.out
-###net limits-ulim-p  gmoccapy.jog.axis.jog-u-minus  <= and2.7.out
-###net limits-ulim-n  gmoccapy.jog.axis.jog-u-plus   <= and2.8.out
-
-#net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
-#net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
-#the next lines are only needed if the pins had been connected before
-#unlinkp iocontrol.0.tool-change
-#unlinkp iocontrol.0.tool-changed
-#unlinkp iocontrol.0.tool-prep-number
-#unlinkp iocontrol.0.tool-prepared
-
-#link to gmoccapy toolchange, so you get the advantage of tool description on change dialog
-#net tool-change       gmoccapy.toolchange-change  <= iocontrol.0.tool-change
-#net tool-changed      gmoccapy.toolchange-changed <= iocontrol.0.tool-changed
-###net tool-prep-number   gmoccapy.toolchange-number  <= iocontrol.0.tool-prep-number
-
-###net manual-mode-check-ok gmoccapy.messages.in-manual-mode
-
-
-###net cmd00 button.hal_button1 halui.mdi-command-00
-###net cmd01 button.hal_button2 halui.mdi-command-
+#	limit switch status info for auto drive out of limits function
+net x-pos-limit-sw		x1Milla.x-pos-limit-sw
+net x-neg-limit-sw		x1Milla.x-neg-limit-sw
+net y-pos-limit-sw		x1Milla.y-pos-limit-sw
+net y-neg-limit-sw		x1Milla.y-neg-limit-sw
+net z-pos-limit-sw		x1Milla.z-pos-limit-sw
+net z-neg-limit-sw		x1Milla.z-neg-limit-sw
+net u-pos-limit-sw		x1Milla.u-pos-limit-sw
+net u-neg-limit-sw		x1Milla.u-neg-limit-sw
 

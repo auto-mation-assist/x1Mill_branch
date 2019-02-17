@@ -1,0 +1,13 @@
+how to do it
+
+cmd = 'G0 X{}'.format(i)
+print 'issuing MDI command: ',cmd
+c.mdi(cmd)
+c.wait_complete()
+
+			self.cmnd.mode(linuxcnc.MODE_MDI)
+			self.cmnd.wait_complete()
+			self.w.stackedWidget_5.setCurrentIndex(1)
+			self.w.pb_f2_keyboard.setEnabled(True)
+			print 'mdi mode'
+
